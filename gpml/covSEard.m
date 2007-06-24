@@ -1,4 +1,4 @@
-function [A, B] = covSEiso(logtheta, x, z);
+function [A, B] = covSEard(loghyper, x, z)
 
 % Squared Exponential covariance function with Automatic Relevance Detemination
 % (ARD) distance measure. The covariance function is parameterized as:
@@ -9,7 +9,7 @@ function [A, B] = covSEiso(logtheta, x, z);
 % D is the dimension of the input space and sf2 is the signal variance. The
 % hyperparameters are:
 %
-% logtheta = [ log(ell_1)
+% loghyper = [ log(ell_1)
 %              log(ell_2)
 %               .
 %              log(ell_D)
@@ -21,10 +21,11 @@ function [A, B] = covSEiso(logtheta, x, z);
 
 if nargin == 0, A = '(D+1)'; return; end          % report number of parameters
 
-persistent K;                 
+persistent K;    
+
 [n D] = size(x);
-ell = exp(logtheta(1:D));                         % characteristic length scale
-sf2 = exp(2*logtheta(D+1));                                   % signal variance
+ell = exp(loghyper(1:D));                         % characteristic length scale
+sf2 = exp(2*loghyper(D+1));                                   % signal variance
 
 if nargin == 2
   K = sf2*exp(-sq_dist(diag(1./ell)*x')/2);
@@ -33,6 +34,12 @@ elseif nargout == 2                              % compute test set covariances
   A = sf2*ones(size(z,1),1);
   B = sf2*exp(-sq_dist(diag(1./ell)*x',diag(1./ell)*z')/2);
 else                                                % compute derivative matrix
+  
+  % check for correct dimension of the previously calculated kernel matrix
+  if any(size(K)~=n)  
+    K = sf2*exp(-sq_dist(diag(1./ell)*x')/2);
+  end
+   
   if z <= D                                           % length scale parameters
     A = K.*sq_dist(x(:,z)'/ell(z));  
   else                                                    % magnitude parameter

@@ -1,4 +1,4 @@
-function [A, B] = covRQard(logtheta, x, z);
+function [A, B] = covRQard(logtheta, x, z)
 
 % Rational Quadratic covariance function with Automatic Relevance Determination
 % (ARD) distance measure. The covariance function is parameterized as:
@@ -9,7 +9,7 @@ function [A, B] = covRQard(logtheta, x, z);
 % D is the dimension of the input space, sf2 is the signal variance and alpha
 % is the shape parameter for the RQ covariance. The hyperparameters are:
 %
-% logtheta = [ log(ell_1)
+% loghyper = [ log(ell_1)
 %              log(ell_2)
 %               .
 %              log(ell_D)
@@ -24,9 +24,9 @@ if nargin == 0, A = '(D+2)'; return; end
 
 persistent K;
 [n D] = size(x);
-ell = exp(logtheta(1:D));
-sf2 = exp(2*logtheta(D+1));
-alpha = exp(logtheta(D+2));
+ell = exp(loghyper(1:D));
+sf2 = exp(2*loghyper(D+1));
+alpha = exp(loghyper(D+2));
 
 if nargin == 2
   K = (1+0.5*sq_dist(diag(1./ell)*x')/alpha);
@@ -35,6 +35,10 @@ elseif nargout == 2                              % compute test set covariances
   A = sf2*ones(size(z,1),1);
   B = sf2*((1+0.5*sq_dist(diag(1./ell)*x',diag(1./ell)*z')/alpha).^(-alpha));
 else                                                % compute derivative matrix
+  % check for correct dimension of the previously calculated kernel matrix
+  if any(size(K)~=n)  
+    K = (1+0.5*sq_dist(diag(1./ell)*x')/alpha);
+  end
   if z <= D                                           % length scale parameters
     A = sf2*K.^(-alpha-1).*sq_dist(x(:,z)'/ell(z));
   elseif z == D+1                                         % magnitude parameter

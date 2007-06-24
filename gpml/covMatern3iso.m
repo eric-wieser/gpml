@@ -1,4 +1,4 @@
-function [A, B] = covMatern3iso(logtheta, x, z);
+function [A, B] = covMatern3iso(loghyper, x, z)
 
 % Matern covariance function with nu = 3/2 and isotropic distance measure. The
 % covariance function is:
@@ -19,8 +19,9 @@ function [A, B] = covMatern3iso(logtheta, x, z);
 if nargin == 0, A = '2'; return; end
 
 persistent K;
-ell = exp(logtheta(1));
-sf2 = exp(2*logtheta(2));
+[n, D] = size(x);
+ell = exp(loghyper(1));
+sf2 = exp(2*loghyper(2));
 
 x = sqrt(3)*x/ell;
 
@@ -37,6 +38,11 @@ else                                              % compute derivative matrices
   if z == 1
     A = sf2*sq_dist(x').*exp(-sqrt(sq_dist(x')));
   else
+    % check for correct dimension of the previously calculated kernel matrix
+    if any(size(K)~=n)  
+      K = sqrt(sq_dist(x'));
+      K = sf2*exp(-K).*(1+K);
+    end
     A = 2*K;
     clear K;
   end

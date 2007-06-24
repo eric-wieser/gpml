@@ -1,4 +1,4 @@
-function [A, B] = covRQiso(logtheta, x, z);
+function [A, B] = covRQiso(loghyper, x, z)
 
 % Rational Quadratic covariance function with isotropic distance measure. The
 % covariance function is parameterized as:
@@ -9,7 +9,7 @@ function [A, B] = covRQiso(logtheta, x, z);
 % variance and alpha is the shape parameter for the RQ covariance. The
 % hyperparameters are:
 %
-% logtheta = [ log(ell)
+% loghyper = [ log(ell)
 %              log(sqrt(sf2))
 %              log(alpha) ]
 %
@@ -19,10 +19,12 @@ function [A, B] = covRQiso(logtheta, x, z);
 
 if nargin == 0, A = '3'; return; end
 
+[n, D] = size(x);
+
 persistent K;
-ell = exp(logtheta(1));
-sf2 = exp(2*logtheta(2));
-alpha = exp(logtheta(3));
+ell = exp(loghyper(1));
+sf2 = exp(2*loghyper(2));
+alpha = exp(loghyper(3));
 
 if nargin == 2                                      % compute covariance matrix
   K = (1+0.5*sq_dist(x'/ell)/alpha);
@@ -31,6 +33,10 @@ elseif nargout == 2                              % compute test set covariances
   A = sf2*ones(size(z,1),1);
   B = sf2*((1+0.5*sq_dist(x'/ell,z'/ell)/alpha).^(-alpha));
 else                                              % compute derivative matrices
+  % check for correct dimension of the previously calculated kernel matrix
+  if any(size(K)~=n)  
+    K = (1+0.5*sq_dist(x'/ell)/alpha);
+  end
   if z == 1                                           % length scale parameters
     A = sf2*K.^(-alpha-1).*sq_dist(x'/ell);
   elseif z == 2                                           % magnitude parameter

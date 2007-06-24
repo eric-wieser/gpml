@@ -1,8 +1,12 @@
 % gpml: code from Rasmussen & Williams: Gaussian Processes for Machine Learning
-% date: 2006-04-07.
+% date: 2007-07-25.
 % 
-% binaryEPGP.m      - The EP approximation for binary GP classification
-% binaryLaplaceGP.m - Laplace's approximation for binary GP classification
+% approxEP.m        - the approximation method for Expectation Propagation
+% approxLA.m        - the approximation method for Laplace's approximation
+% approximations.m  - help for approximation methods
+% binaryEPGP.m      - outdated, the EP approx for binary GP classification
+% binaryGP.m        - binary Gaussian process classification
+% binaryLaplaceGP.m - outdated, Laplace's approx for binary GP classification
 %
 %   covConst.m      - covariance for constant functions
 %   covFunctions.m  - help file with overview of covariance functions
@@ -20,9 +24,12 @@
 %   covSEiso.m      - isotropic squared exponential covariance function
 %   covSum.m        - function for adding other covariance functions
 %
+% cumGauss.m        - cumulative Gaussian likelihood function
 % gpr.m             - Gaussian process regression with general covariance
 %                     function 
 % gprSRPP.m         - Implements SR and PP approximations to GPR
+% likelihoods.m     - help function for classification likelihoods
+% logistic.m        - logistic likelihood function
 % minimize.m        - Minimize a differentiable multivariate function
 % solve_chol.c      - Solve linear equations from the Cholesky factorization
 %                     should be compiled into a mex file
