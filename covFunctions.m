@@ -42,7 +42,7 @@
 %
 % 1) With no (or one) input argument(s):
 %
-%    s = covNAME
+%    s = cov
 %
 % The covariance function returns a string s telling how many hyperparameters it
 % expects, using the convention that "D" is the dimension of the input space.
@@ -50,7 +50,7 @@
 %
 % 2) With two input arguments:
 %
-%    K = covNAME(hyp, x) equivalent to K = covNAME(hyp, x, [])
+%    K = cov(hyp, x) equivalent to K = cov(hyp, x, [])
 %
 % The function computes and returns the covariance matrix where hyp are
 % the hyperparameters and x is an n by D matrix of cases, where
@@ -59,8 +59,8 @@
 %
 % 3) With three input arguments:
 %
-%    Ks  = covNAME(hyp, x, xs)
-%    kss = covNAME(hyp, xs, 'diag')
+%    Ks  = cov(hyp, x, xs)
+%    kss = cov(hyp, xs, 'diag')
 %
 % The function computes test set covariances; kss is a vector of self covariances
 % for the test cases in xs (of length ns) and Ks is an (n by ns) matrix of cross
@@ -68,9 +68,9 @@
 %
 % 4) With four input arguments:
 %
-%     dKi   = covNAME(hyp, x, [], i)
-%     dKsi  = covNAME(hyp, x, xs, i)
-%     dkssi = covNAME(hyp, xs, 'diag', i)
+%     dKi   = cov(hyp, x, [], i)
+%     dKsi  = cov(hyp, x, xs, i)
+%     dkssi = cov(hyp, xs, 'diag', i)
 %
 % The function computes and returns the partial derivatives of the
 % covariance matrices with respect to hyp(i), i.e. with
@@ -107,4 +107,4 @@
 %
 % See also doc/usageCov.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21

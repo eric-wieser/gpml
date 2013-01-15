@@ -5,14 +5,14 @@ function [varargout] = likErf(hyp, y, mu, s2, inf, i)
 %   likErf(t) = (1+erf(t/sqrt(2)))/2 = normcdf(t).
 %
 % Several modes are provided, for computing likelihoods, derivatives and moments
-% respectively, see likelihoods.m for the details. In general, care is taken
+% respectively, see likFunctions.m for the details. In general, care is taken
 % to avoid numerical issues when the arguments are extreme.
 % 
 % Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-07-22.
 %
-% See also likFunctions.m.
+% See also LIKFUNCTIONS.M.
 
-if nargin<2, varargout = {'0'}; return; end   % report number of hyperparameters
+if nargin<3, varargout = {'0'}; return; end   % report number of hyperparameters
 if nargin>1, y = sign(y); y(y==0) = 1; else y = 1; end % allow only +/- 1 values
 if numel(y)==0, y = 1; end
 
@@ -49,9 +49,9 @@ else                                                            % inference mode
           end
         end
       end
-      varargout = {sum(lp),dlp,d2lp,d3lp};
+      varargout = {lp,dlp,d2lp,d3lp};
     else                                                       % derivative mode
-      varargout = {[]};                               % derivative w.r.t. hypers
+      varargout = {[],[],[]};                         % derivative w.r.t. hypers
     end
 
   case 'infEP'
@@ -73,13 +73,17 @@ else                                                            % inference mode
     end
   
   case 'infVB'
-    % naive variational lower site bound based on asymptotical properties of lik
-    % normcdf(t) -> -(t²-2dt+c)/2 for t->-oo (tight lower bound)
-    d =  0.158482605320942;
-    c = -1.785873318175113;
-    ga = s2; n = numel(ga); b = d*y.*ones(n,1); db = zeros(n,1); d2b = db;
-    h = -2*c*ones(n,1); h(ga>1) = Inf; dh = zeros(n,1); d2h = dh;   
-    varargout = {h,b,dh,db,d2h,d2b};
+    if nargin<6                                             % no derivative mode
+      % naive variational lower bound based on asymptotical properties of lik
+      % normcdf(t) -> -(t²-2dt+c)/2 for t->-oo (tight lower bound)
+      d =  0.158482605320942;
+      c = -1.785873318175113;
+      ga = s2; n = numel(ga); b = d*y.*ones(n,1); db = zeros(n,1); d2b = db;
+      h = -2*c*ones(n,1); h(ga>1) = Inf; dh = zeros(n,1); d2h = dh;   
+      varargout = {h,b,dh,db,d2h,d2b};
+    else                                                       % derivative mode
+      varargout = {[]};                                     % deriv. wrt hyp.lik
+    end
   end
 end
 

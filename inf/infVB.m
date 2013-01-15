@@ -24,7 +24,7 @@ function [post, nlZ, dnlZ] = infVB(hyp, mean, cov, lik, x, y)
 % and an outer loop doing joint Newton updates in (ga,theta). Line searches are
 % done using derivative-free 'Brent's minimum' search.
 %
-% Copyright (c) by Hannes Nickisch 2010-07-22.
+% Copyright (c) by Hannes Nickisch 2012-11-07.
 %
 % See also INFMETHODS.M.
 
@@ -39,15 +39,17 @@ inf = 'infVB';
 [n,D] = size(x);
 K = feval(cov{:}, hyp.cov, x);                  % evaluate the covariance matrix
 m = feval(mean{:}, hyp.mean, x);                      % evaluate the mean vector
-if ~ischar(lik), lik = func2str(lik); end
+if iscell(lik), likstr = lik{1}; else likstr = lik; end
+if ~ischar(likstr), likstr = func2str(likstr); end
+
 if    (norm(m)>1e-10 || numel(hyp.mean)>0) ...
-   && (strcmp(lik,'likErf')||strcmp(lik,'likLogistic')) 
+   && (strcmp(likstr,'likErf')||strcmp(likstr,'likLogistic')) 
     error('only meanZero implemented for classification')
 end
 y = y-m;         % no we have either zero mean or non-classification likelihoods
-if strcmp(lik,'likGauss')
+if strcmp(likstr,'likGauss')
   ga = exp(2*hyp.lik)*ones(n,1);      % best ga is known for Gaussian likelihood
-elseif strcmp(lik,'likErf')
+elseif strcmp(likstr,'likErf')
   ga = ones(n,1);        % use a fixed ga for errf likelihood due to asymptotics
 else
   % INNER compute the Newton direction of ga
@@ -79,9 +81,9 @@ if nargout>2                                           % do we want derivatives?
     if j==1, v = iKtil*(b./W); end
     dnlZ.cov(j) = sum(sum(iKtil.*dK))/2 - (v'*dK*v)/2; % implicit derivative = 0
   end
-  if ~strcmp(lik,'likGauss')                                 % likelihood hypers
+  if ~strcmp(likstr,'likGauss')                              % likelihood hypers
     for j=1:length(hyp.lik)
-      dhhyp = feval(lik,hyp.lik,y,[],ga,inf,j);
+      dhhyp = feval(lik{:},hyp.lik,y,[],ga,inf,j);
       dnlZ.lik(j) = sum(dhhyp)/2;                      % implicit derivative = 0
     end
   else                                 % special treatment for the Gaussian case
@@ -99,7 +101,7 @@ end
 % the code is numerically stable
 function [nlZ,dga,d2ga,b] = Psi(ga,K,inf,hyp,lik,y)
   n = size(K,1);
-  [h,b,dh,db,d2h,d2b] = feval(lik,hyp.lik,y,[],ga,inf);
+  [h,b,dh,db,d2h,d2b] = feval(lik{:},hyp.lik,y,[],ga,inf);
   W = 1./ga; sW = sqrt(W);
   L = chol(eye(n)+sW*sW'.*K);                     % sum(log(diag(L))) = log|B|/2
   C = L'\(repmat(sW,1,n).*K);

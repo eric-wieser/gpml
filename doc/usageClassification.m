@@ -1,6 +1,6 @@
 % demonstrate usage of classification
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch 2010-06-21.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch 2012-11-07.
 clear all, close all
 
 %% SAY WHICH CODE WE WISH TO EXERCISE
@@ -30,7 +30,7 @@ sdscale = 0.5;                  % how many sd wide should the error bars become?
 col = {'k',[.8,0,0],[0,.5,0],'b',[0,.75,.75],[.7,0,.5]};                % colors
 ymu{1} = 2*p(xte)-1; ys2{1} = 0;
 for i=1:size(id,1)
-  lik = lik_list{id(i,1)};                                % setup the likelihood
+  lik = lik_list(id(i,1));                                % setup the likelihood
   if strcmp(lik,'likGauss')
     sn = .2; hyp0.lik = log(sn);
   else

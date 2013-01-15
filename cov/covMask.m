@@ -9,12 +9,13 @@ function K = covMask(cov, hyp, x, z, i)
 % The function was suggested by Iain Murray, 2010-02-18 and is based on an
 % earlier implementation of his dating back to 2009-06-16.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-09-10.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2012-11-17.
 %
 % See also COVFUNCTIONS.M.
 
 mask = fix(cov{1}(:));                    % either a binary mask or an index set
 cov = cov(2);                                 % covariance function to be masked
+if iscell(cov{:}), cov = cov{:}; end        % properly unwrap nested cell arrays
 nh_string = feval(cov{:});    % number of hyperparameters of the full covariance
 
 if max(mask)<2 && length(mask)>1, mask = find(mask); end    % convert 1/0->index

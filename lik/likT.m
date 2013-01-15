@@ -14,14 +14,14 @@ function [varargout] = likT(hyp, y, mu, s2, inf, i)
 % Note that the parametrisation guarantees nu>1, thus the mean always exists.
 %
 % Several modes are provided, for computing likelihoods, derivatives and moments
-% respectively, see likelihoods.m for the details. In general, care is taken
-% to avoid numerical issues when the arguments are extreme. 
+% respectively, see likFunctions.m for the details. In general, care is taken
+% to avoid numerical issues when the arguments are extreme.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-07-21.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2012-10-27.
 %
-% See also likFunctions.m.
+% See also LIKFUNCTIONS.M.
 
-if nargin<2, varargout = {'2'}; return; end   % report number of hyperparameters
+if nargin<3, varargout = {'2'}; return; end   % report number of hyperparameters
 
 numin = 1;                                                 % minimum value of nu
 nu = exp(hyp(1))+numin; sn2 = exp(2*hyp(2));           % extract hyperparameters
@@ -31,7 +31,7 @@ if nargin<5                              % prediction mode if inf is not present
   if numel(y)==0,  y = zeros(size(mu)); end
   s2zero = 1; if nargin>3, if norm(s2)>0, s2zero = 0; end, end         % s2==0 ?
   if s2zero                                         % log probability evaluation
-    lp = lZ - (nu+1)*log( 1+(y-mu).^2./(nu.*sn2) )/2;
+    lp = lZ - (nu+1)*log( 1+(y-mu).^2./(nu.*sn2) )/2; s2 = 0;
   else                                                              % prediction
     lp = likT(hyp, y, mu, s2, 'infEP');
   end
@@ -40,9 +40,9 @@ if nargin<5                              % prediction mode if inf is not present
     ymu = mu;                    % first y moment; for nu<=1 we this is the mode
     if nargout>2
       if nu<=2
-        ys2 = Inf(size(s2));
+        ys2 = Inf(size(mu));
       else
-        ys2 = s2 + nu*sn2/(nu-2);                              % second y moment
+        ys2 = (s2 + nu*sn2/(nu-2)).*ones(size(mu));            % second y moment
       end
     end
   end
@@ -50,7 +50,7 @@ if nargin<5                              % prediction mode if inf is not present
 else
   switch inf 
   case 'infLaplace'
-    r = y-mu; r2 = r.^2;
+    r = y-mu; r2 = r.*r;
     if nargin<6                                             % no derivative mode
       dlp = {}; d2lp = {}; d3lp = {};
       lp = lZ - (nu+1)*log( 1+r2./(nu.*sn2) )/2;
@@ -64,20 +64,23 @@ else
           end
         end
       end
-      varargout = {sum(lp),dlp,d2lp,d3lp};
+      varargout = {lp,dlp,d2lp,d3lp};
     else                                                       % derivative mode
-      a3 = (r2+nu*sn2).^3;
+      a = r2+nu*sn2; a2 = a.*a; a3 = a2.*a;
       if i==1                                             % derivative w.r.t. nu
         lp_dhyp =  nu*( dloggamma(nu/2+1/2)-dloggamma(nu/2) )/2 - 1/2 ...
                   -nu*log(1+r2/(nu*sn2))/2 +(nu/2+1/2)*r2./(nu*sn2+r2);
         lp_dhyp = (1-numin/nu)*lp_dhyp;          % correct for lower bound on nu
+        dlp_dhyp = nu*r.*( a - sn2*(nu+1) )./a2;
+        dlp_dhyp = (1-numin/nu)*dlp_dhyp;        % correct for lower bound on nu       
         d2lp_dhyp = nu*( r2.*(r2-3*sn2*(1+nu)) + nu*sn2^2 )./a3;
         d2lp_dhyp = (1-numin/nu)*d2lp_dhyp;      % correct for lower bound on nu
       else                                                % derivative w.r.t. sn
-        lp_dhyp = (nu+1)*r2./(r2+nu*sn2) - 1; 
-        d2lp_dhyp = (nu+1)*2*nu*sn2*(nu*sn2-3*r2)./a3;
+        lp_dhyp   =  (nu+1)*r2./a - 1;
+        dlp_dhyp  = -(nu+1)*2*nu*sn2*r./a2;
+        d2lp_dhyp =  (nu+1)*2*nu*sn2*(a-4*r2)./a3;
       end
-      varargout = {lp_dhyp,d2lp_dhyp};
+      varargout = {lp_dhyp,dlp_dhyp,d2lp_dhyp};
     end
 
   case 'infEP'
@@ -130,79 +133,14 @@ else
   end
 end
 
-% Returns the log of the gamma function.  Source: Pike, M.C., and
-% I.D. Hill, Algorithm 291, Communications of the ACM, 9,9:p.684 (Sept, 1966).
-% Accuracy to 10 decimal places.  Uses Sterling's formula.
-% Derivative from Abromowitz and Stegun, formula 6.3.18 with recurrence 6.3.5.
 function f = loggamma(x)
-  x = x+6;
-  f = 1./(x.*x);
-  f = (((-0.000595238095238*f+0.000793650793651).*f-1/360).*f+1/12)./x;
-  f = (x-0.5).*log(x)-x+0.918938533204673+f;
-  f = f-log(x-1)-log(x-2)-log(x-3)-log(x-4)-log(x-5)-log(x-6);
+  f = gammaln(x);
 
 function df = dloggamma(x)
-  x = x+6;
-  df = 1./(x.*x);
-  df = (((df/240-0.003968253986254).*df+1/120).*df-1/120).*df;
-  df = df+log(x)-0.5./x-1./(x-1)-1./(x-2)-1./(x-3)-1./(x-4)-1./(x-5)-1./(x-6);
+  df = psi(x);
 
 %  computes y = log( exp(A)*x ) in a numerically safe way by subtracting the
 %  maximal value in each row to avoid cancelation after taking the exp
 function y = log_expA_x(A,x)
   N = size(A,2);  maxA = max(A,[],2);      % number of columns, max over columns
   y = log(exp(A-maxA*ones(1,N))*x) + maxA;  % exp(A) = exp(A-max(A))*exp(max(A))
-
-% compute abscissas and weight factors for Gaussian-Hermite quadrature
-%
-% CALL:  [x,w]=gauher(N)
-%  
-%  x = base points (abscissas)
-%  w = weight factors
-%  N = number of base points (abscissas) (integrates a (2N-1)th order
-%      polynomial exactly)
-%
-%  p(x)=exp(-x^2/2)/sqrt(2*pi), a =-Inf, b = Inf 
-%
-%  The Gaussian Quadrature integrates a (2n-1)th order
-%  polynomial exactly and the integral is of the form
-%           b                         N
-%          Int ( p(x)* F(x) ) dx  =  Sum ( w_j* F( x_j ) )
-%           a                        j=1		          
-%
-%      this procedure uses the coefficients a(j), b(j) of the
-%      recurrence relation
-%
-%           b p (x) = (x - a ) p   (x) - b   p   (x)
-%            j j            j   j-1       j-1 j-2
-%
-%      for the various classical (normalized) orthogonal polynomials,
-%      and the zero-th moment
-%
-%           1 = integral w(x) dx
-%
-%      of the given polynomial's weight function w(x).  Since the
-%      polynomials are orthonormalized, the tridiagonal matrix is
-%      guaranteed to be symmetric.
-function [x,w]=gauher(N)
-  if N==20 % return precalculated values
-      x=[ -7.619048541679757;-6.510590157013656;-5.578738805893203;
-          -4.734581334046057;-3.943967350657318;-3.18901481655339 ;
-          -2.458663611172367;-1.745247320814127;-1.042945348802751;
-          -0.346964157081356; 0.346964157081356; 1.042945348802751;
-           1.745247320814127; 2.458663611172367; 3.18901481655339 ;
-           3.943967350657316; 4.734581334046057; 5.578738805893202;
-           6.510590157013653; 7.619048541679757];
-      w=[  0.000000000000126; 0.000000000248206; 0.000000061274903;
-           0.00000440212109 ; 0.000128826279962; 0.00183010313108 ;
-           0.013997837447101; 0.061506372063977; 0.161739333984   ;
-           0.260793063449555; 0.260793063449555; 0.161739333984   ;
-           0.061506372063977; 0.013997837447101; 0.00183010313108 ;
-           0.000128826279962; 0.00000440212109 ; 0.000000061274903;
-           0.000000000248206; 0.000000000000126 ];
-  else
-      b = sqrt( (1:N-1)/2 )';    
-      [V,D] = eig( diag(b,1) + diag(b,-1) );
-      w = V(1,:)'.^2;
-      x = sqrt(2)*diag(D);
-  end

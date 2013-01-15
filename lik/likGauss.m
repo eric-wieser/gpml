@@ -10,14 +10,14 @@ function [varargout] = likGauss(hyp, y, mu, s2, inf, i)
 % hyp = [  log(sn)  ]
 %
 % Several modes are provided, for computing likelihoods, derivatives and moments
-% respectively, see likelihoods.m for the details. In general, care is taken
+% respectively, see likFunctions.m for the details. In general, care is taken
 % to avoid numerical issues when the arguments are extreme.
 %
-% See also likFunctions.m.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18
+% See also LIKFUNCTIONS.M.
 
-if nargin<2, varargout = {'1'}; return; end   % report number of hyperparameters
+if nargin<3, varargout = {'1'}; return; end   % report number of hyperparameters
 
 sn2 = exp(2*hyp);
 
@@ -53,11 +53,12 @@ else
           end
         end
       end
-      varargout = {sum(lp),dlp,d2lp,d3lp};
+      varargout = {lp,dlp,d2lp,d3lp};
     else                                                       % derivative mode
       lp_dhyp = (y-mu).^2/sn2 - 1;  % derivative of log likelihood w.r.t. hypers
+      dlp_dhyp = 2*(mu-y)/sn2;                               % first derivative,
       d2lp_dhyp = 2*ones(size(mu))/sn2;   % and also of the second mu derivative
-      varargout = {lp_dhyp,d2lp_dhyp};
+      varargout = {lp_dhyp,dlp_dhyp,d2lp_dhyp};
     end
 
   case 'infEP'

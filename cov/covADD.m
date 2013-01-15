@@ -17,6 +17,9 @@ function K = covADD(cov, hyp, x, z, i)
 % where hyp_d are the parameters of the 1d covariance function which are shared
 % over the different values of R(1) to R(end).
 %
+% Please see the paper Additive Gaussian Processes by Duvenaud, Nickisch and 
+% Rasmussen, NIPS, 2011 for details.
+%
 % Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-09-10.
 %
 % See also COVFUNCTIONS.M.

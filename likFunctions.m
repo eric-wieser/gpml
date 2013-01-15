@@ -2,11 +2,16 @@
 %
 %   likErf         (Error function, classification, probit regression)
 %   likLogistic    (Logistic,       classification, logit  regression)
+%   likUni         (Uniform likelihood, classification)
 %
 %   likGauss       (Gaussian, regression)
 %   likLaplace     (Laplacian or double exponential, regression)
 %   likSech2       (Sech-square, regression)
 %   likT           (Student's t, regression)
+%
+%   likPoisson     (Poisson regression, count data)
+%
+%   likMix         (Mixture of individual covariance functions)
 %
 % The likelihood functions have three possible modes, the mode being selected
 % as follows (where "lik" stands for any likelihood function in "lik/lik*.m".):
@@ -46,7 +51,7 @@
 % There are three cases for inf, namely a) infLaplace, b) infEP and c) infVB. 
 % The last input i, refers to derivatives w.r.t. the ith hyperparameter. 
 %
-% a1) [sum(lp),dlp,d2lp,d3lp] = lik(hyp, y, f, [], 'infLaplace')
+% a1) [lp,dlp,d2lp,d3lp] = lik(hyp, y, f, [], 'infLaplace')
 % lp, dlp, d2lp and d3lp correspond to derivatives of the log likelihood 
 % log(p(y|f)) w.r.t. to the latent location f.
 %   lp = log( p(y|f) )
@@ -54,9 +59,10 @@
 % d2lp = d^2 log( p(y|f) ) / df^2
 % d3lp = d^3 log( p(y|f) ) / df^3
 %
-% a2) [lp_dhyp,d2lp_dhyp] = lik(hyp, y, f, [], 'infLaplace', i)
+% a2) [lp_dhyp,dlp_dhyp,d2lp_dhyp] = lik(hyp, y, f, [], 'infLaplace', i)
 % returns derivatives w.r.t. to the ith hyperparameter
-%   lp_dhyp = d   log( p(y|f) ) / (df   dhyp_i)
+%   lp_dhyp = d   log( p(y|f) ) / (     dhyp_i)
+%  dlp_dhyp = d^2 log( p(y|f) ) / (df   dhyp_i)
 % d2lp_dhyp = d^3 log( p(y|f) ) / (df^2 dhyp_i)
 %
 %
@@ -83,7 +89,12 @@
 % Cumulative likelihoods are designed for binary classification. Therefore, they
 % only look at the sign of the targets y; zero values are treated as +1.
 %
+% Some examples for valid likelihood functions:
+%      lik = @likLogistic;
+%      lik = {'likMix',{'likUni',@likErf}}
+%      lik = {@likPoisson,'logistic'};
+%
 % See the help for the individual likelihood for the computations specific to
 % each likelihood function.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21

@@ -44,4 +44,4 @@
 %
 % See also doc/usageMean.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21

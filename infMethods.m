@@ -1,11 +1,20 @@
 % Inference methods: Compute the (approximate) posterior for a Gaussian process.
 % Methods currently implemented include:
 %
-%   infExact    Exact inference (only possible with Gaussian likelihood)
-%   infFITC     Large scale regression with approximate covariance matrix
-%   infLaplace  Laplace's Approximation
-%   infEP       Expectation Propagation
-%   infVB       Variational Bayes
+%   infExact         Exact inference (only possible with Gaussian likelihood)
+%   infLaplace       Laplace's Approximation
+%   infEP            Expectation Propagation
+%   infVB            Variational Bayes Approximation
+%
+%   infFITC          Large scale regression with approximate covariance matrix
+%   infFITC_Laplace  Large scale inference  with approximate covariance matrix
+%   infFITC_EP       Large scale inference  with approximate covariance matrix
+%
+%   infMCMC     Markov Chain Monte Carlo and Annealed Importance Sampling
+%               We offer two samplers.
+%                 - hmc: Hybrid Monte Carlo
+%                 - ess: Elliptical Slice Sampling
+%               No derivatives w.r.t. to hyperparameters are provided.
 %
 %   infLOO      Leave-One-Out predictive probability and Least-Squares Approxim.
 %
@@ -38,4 +47,4 @@
 % For more information on the individual approximation methods and their
 % implementations, see the separate inf??.m files. See also gp.m
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21

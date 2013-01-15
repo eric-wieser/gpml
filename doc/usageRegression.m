@@ -7,7 +7,7 @@ clear all, close all
 id = [1,1]; % use Exact
 % id = [1,2; 3,2; 4,2]; % compare Laplace
 id = [1,3; 2,3; 3,3]; % compare EP
-% id = [1,4; 2,4; 3,4; 4,4]; % compare VB
+id = [1,4; 2,4; 3,4; 4,4]; % compare VB
 
 seed = 197; randn('seed',seed), rand('seed',seed)
 

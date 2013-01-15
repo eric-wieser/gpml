@@ -10,18 +10,18 @@ function [varargout] = likLaplace(hyp, y, mu, s2, inf, i)
 % hyp = [  log(sn)  ]
 %
 % Several modes are provided, for computing likelihoods, derivatives and moments
-% respectively, see likelihoods.m for the details. In general, care is taken
+% respectively, see likFunctions.m for the details. In general, care is taken
 % to avoid numerical issues when the arguments are extreme. 
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-07-21.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2012-11-04.
 %
-% See also likFunctions.m.
+% See also LIKFUNCTIONS.M.
 
-if nargin<2, varargout = {'1'}; return; end   % report number of hyperparameters
+if nargin<3, varargout = {'1'}; return; end   % report number of hyperparameters
 
 sn = exp(hyp); b = sn/sqrt(2);
 if nargin<5                              % prediction mode if inf is not present
-  if numel(y)==0,  y = zeros(size(mu)); end
+  if numel(y)==0, y = zeros(size(mu)); end
   s2zero = 1; if nargin>3, if norm(s2)>0, s2zero = 0; end, end         % s2==0 ?
   if s2zero                                         % log probability evaluation
     lp = -abs(y-mu)./b -log(2*b); s2 = 0;
@@ -52,16 +52,17 @@ else                                                            % inference mode
           end
         end
       end
-      varargout = {sum(lp),dlp,d2lp,d3lp};
+      varargout = {lp,dlp,d2lp,d3lp};
     else                                                       % derivative mode
       lp_dhyp = abs(y-mu)/b - 1;    % derivative of log likelihood w.r.t. hypers
+      dlp_dhyp = sign(mu-y)/b;                               % first derivative,
       d2lp_dhyp = zeros(size(mu));        % and also of the second mu derivative
-      varargout = {lp_dhyp,d2lp_dhyp};
+      varargout = {lp_dhyp,dlp_dhyp,d2lp_dhyp};
     end
     
   case 'infEP'
-    n = max([length(y),length(mu),length(s2),length(sn)]); on = ones(n,1);
-    y = y.*on; mu = mu.*on; s2 = s2.*on; sn = sn.*on;             % vectors only
+    n = max([numel(y),numel(mu),numel(s2),numel(sn)]); on = ones(n,1);
+    y = y(:).*on; mu = mu(:).*on; s2 = s2(:).*on; sn = sn(:).*on; % vectors only
     fac = 1e3;          % factor between the widths of the two distributions ...
        % ... from when one considered a delta peak, we use 3 orders of magnitude
     idlik = fac*sn<sqrt(s2);                        % Likelihood is a delta peak

@@ -5,16 +5,16 @@ function [varargout] = likLogistic(hyp, y, mu, s2, inf, i)
 %   likLogistic(t) = 1./(1+exp(-t)).
 %
 % Several modes are provided, for computing likelihoods, derivatives and moments
-% respectively, see likelihoods.m for the details. In general, care is taken
+% respectively, see likFunctions.m for the details. In general, care is taken
 % to avoid numerical issues when the arguments are extreme. The moments
 % \int f^k likLogistic(y,f) N(f|mu,var) df are calculated via a cumulative 
 % Gaussian scale mixture approximation.
 %
 % Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-07-22.
 %
-% See also likFunctions.m.
+% See also LIKFUNCTIONS.M.
 
-if nargin<2, varargout = {'0'}; return; end   % report number of hyperparameters
+if nargin<3, varargout = {'0'}; return; end   % report number of hyperparameters
 if nargin>1, y = sign(y); y(y==0) = 1; else y = 1; end % allow only +/- 1 values
 if numel(y)==0, y = 1; end
 
@@ -55,9 +55,9 @@ else                                                            % inference mode
           end
         end
       end
-      varargout = {sum(lp),dlp,d2lp,d3lp};
+      varargout = {lp,dlp,d2lp,d3lp};
     else                                                       % derivative mode
-      varargout = {[]};                               % derivative w.r.t. hypers
+      varargout = {[],[],[]};                         % derivative w.r.t. hypers
     end
     
   case 'infEP'
@@ -92,22 +92,26 @@ else                                                            % inference mode
     end
     
   case 'infVB'
-    % variational lower site bound
-    % using -log(1+exp(-s)) = s/2 -log( 2*cosh(s/2) );
-    % the bound has the form: b*s - s.^2/(2*ga) - h(ga)/2 with b=1/2
-    ga = s2; n = numel(ga); b = (y/2).*ones(n,1); db = zeros(n,1); d2b = db;
-    h = zeros(n,1); dh = h; d2h = h;       % allocate memory for return argument
-    idlo = ga(:)<=4; h(idlo) = 2*log(2);                % constant value below 4   
-    idup = 50<=ga(:); zn = zeros(n,1);        % linear behavior for large gammas
-    h(idup) = ga(idup)/4; dh(idup) = zn(idup)+1/4; d2h(idup) = zn(idup);    
-    id = ~idlo & ~idup;                         % interesting zone is in between
-    [g,dg,d2g] = inv_xcothx(1/4*ga(id));
-    thg = tanh(g);
-      h(id) = 2*logcosh(g) +2*log(2) -g.*thg;
-    g1mt2 = g.*(1-thg.^2);
-     dh(id) = dg.*( thg - g1mt2 )/4;
-    d2h(id) = ( g1mt2.*(2*dg.^2.*thg-d2g) + d2g.*thg )/16;
-    varargout = {h,b,dh,db,d2h,d2b};
+    if nargin<6                                             % no derivative mode
+      % variational lower site bound
+      % using -log(1+exp(-s)) = s/2 -log( 2*cosh(s/2) );
+      % the bound has the form: b*s - s.^2/(2*ga) - h(ga)/2 with b=1/2
+      ga = s2; n = numel(ga); b = (y/2).*ones(n,1); db = zeros(n,1); d2b = db;
+      h = zeros(n,1); dh = h; d2h = h;     % allocate memory for return argument
+      idlo = ga(:)<=4; h(idlo) = 2*log(2);              % constant value below 4   
+      idup = 50<=ga(:); zn = zeros(n,1);      % linear behavior for large gammas
+      h(idup) = ga(idup)/4; dh(idup) = zn(idup)+1/4; d2h(idup) = zn(idup);    
+      id = ~idlo & ~idup;                       % interesting zone is in between
+      [g,dg,d2g] = inv_xcothx(1/4*ga(id));
+      thg = tanh(g);
+        h(id) = 2*logcosh(g) +2*log(2) -g.*thg;
+      g1mt2 = g.*(1-thg.^2);
+       dh(id) = dg.*( thg - g1mt2 )/4;
+      d2h(id) = ( g1mt2.*(2*dg.^2.*thg-d2g) + d2g.*thg )/16;
+      varargout = {h,b,dh,db,d2h,d2b};
+    else                                                       % derivative mode
+      varargout = {[]};                                     % deriv. wrt hyp.lik
+    end
   end
 end
 

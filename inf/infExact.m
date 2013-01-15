@@ -4,11 +4,12 @@ function [post nlZ dnlZ] = infExact(hyp, mean, cov, lik, x, y)
 % of the posterior, the negative log marginal likelihood and its derivatives
 % w.r.t. the hyperparameters. See also "help infMethods".
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
 %
 % See also INFMETHODS.M.
 
-likstr = lik; if ~ischar(lik), likstr = func2str(lik); end 
+if iscell(lik), likstr = lik{1}; else likstr = lik; end
+if ~ischar(likstr), likstr = func2str(likstr); end
 if ~strcmp(likstr,'likGauss')               % NOTE: no explicit call to likGauss
   error('Exact inference only possible with Gaussian likelihood');
 end

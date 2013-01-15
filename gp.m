@@ -39,11 +39,12 @@ function [varargout] = gp(hyp, inf, mean, cov, lik, x, y, xs, ys)
 %   lp       column vector (of length ns) of log predictive probabilities
 %
 %   post     struct representation of the (approximate) posterior
-%            3rd output in training mode and 6th output in prediction mode
+%            3rd output in training mode or 6th output in prediction mode
+%            can be reused in prediction mode gp(.., cov, lik, x, post, xs,..)
 % 
 % See also covFunctions.m, infMethods.m, likFunctions.m, meanFunctions.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
 if nargin<7 || nargin>9
   disp('Usage: [nlZ dnlZ          ] = gp(hyp, inf, mean, cov, lik, x, y);')
   disp('   or: [ymu ys2 fmu fs2   ] = gp(hyp, inf, mean, cov, lik, x, y, xs);')
@@ -51,20 +52,27 @@ if nargin<7 || nargin>9
   return
 end
 
-if isempty(inf),  inf = @infExact; else                        % set default inf
-  if iscell(inf), inf = inf{1}; end                      % cell input is allowed
-  if ischar(inf), inf = str2func(inf); end        % convert into function handle
-end
 if isempty(mean), mean = {@meanZero}; end                     % set default mean
 if ischar(mean) || isa(mean, 'function_handle'), mean = {mean}; end  % make cell
 if isempty(cov), error('Covariance function cannot be empty'); end  % no default
 if ischar(cov)  || isa(cov,  'function_handle'), cov  = {cov};  end  % make cell
 cov1 = cov{1}; if isa(cov1, 'function_handle'), cov1 = func2str(cov1); end
-if strcmp(cov1,'covFITC'); inf = @infFITC; end       % only one possible inf alg
-if isempty(lik),  lik = @likGauss; else                        % set default lik
-  if iscell(lik), lik = lik{1}; end                      % cell input is allowed
-  if ischar(lik), lik = str2func(lik); end        % convert into function handle
+if isempty(inf)                                   % set default inference method
+  if strcmp(cov1,'covFITC'), inf = @infFITC; else inf = @infExact; end
+else
+  if iscell(inf), inf = inf{1}; end                      % cell input is allowed
+  if ischar(inf), inf = str2func(inf); end        % convert into function handle
 end
+if strcmp(cov1,'covFITC')                           % only infFITC* are possible
+  if isempty(strfind(func2str(inf),'infFITC')==1)
+    error('Only infFITC* are possible inference algorithms')
+  end
+end                            % only one possible class of inference algorithms
+if isempty(lik),  lik = {@likGauss}; end                       % set default lik
+if ischar(lik)  || isa(lik,  'function_handle'), lik  = {lik};  end  % make cell
+if iscell(lik), likstr = lik{1}; else likstr = lik; end
+if ~ischar(likstr), likstr = func2str(likstr); end
+
 D = size(x,2);
 
 if ~isfield(hyp,'mean'), hyp.mean = []; end        % check the hyp specification
@@ -76,21 +84,27 @@ if eval(feval(cov{:})) ~= numel(hyp.cov)
   error('Number of cov function hyperparameters disagree with cov function')
 end
 if ~isfield(hyp,'lik'), hyp.lik = []; end
-if eval(feval(lik)) ~= numel(hyp.lik)
+if eval(feval(lik{:})) ~= numel(hyp.lik)
   error('Number of lik function hyperparameters disagree with lik function')
 end
 
 try                                                  % call the inference method
   % issue a warning if a classification likelihood is used in conjunction with
   % labels different from +1 and -1
-  if strcmp(func2str(lik),'likErf') || strcmp(func2str(lik),'likLogistic')
-    uy = unique(y);
-    if any( uy~=+1 & uy~=-1 )
-      warning('You attempt classification using labels different from {+1,-1}\n')
+  if strcmp(likstr,'likErf') || strcmp(likstr,'likLogistic')
+    if ~isstruct(y)
+      uy = unique(y);
+      if any( uy~=+1 & uy~=-1 )
+        warning('You try classification with labels different from {+1,-1}')
+      end
     end
   end
   if nargin>7   % compute marginal likelihood and its derivatives only if needed
-    post = inf(hyp, mean, cov, lik, x, y);
+    if isstruct(y)
+      post = y;            % reuse a previously computed posterior approximation
+    else
+      post = inf(hyp, mean, cov, lik, x, y);
+    end
   else
     if nargout==1
       [post nlZ] = inf(hyp, mean, cov, lik, x, y); dnlZ = {};
@@ -115,7 +129,7 @@ else
     nz = alpha ~= 0;                                 % determine nonzero indices
     if issparse(L), L = full(L(nz,nz)); end      % convert L and sW if necessary
     if issparse(sW), sW = full(sW(nz)); end
-  else nz = true(size(alpha)); end                   % non-sparse representation
+  else nz = true(size(alpha,1),1); end               % non-sparse representation
   if numel(L)==0                      % in case L is not provided, we compute it
     K = feval(cov{:}, hyp.cov, x(nz,:));
     L = chol(eye(sum(nz))+sW*sW'.*K);
@@ -130,7 +144,9 @@ else
     kss = feval(cov{:}, hyp.cov, xs(id,:), 'diag');              % self-variance
     Ks  = feval(cov{:}, hyp.cov, x(nz,:), xs(id,:));         % cross-covariances
     ms = feval(mean{:}, hyp.mean, xs(id,:));
-    fmu(id) = ms + Ks'*full(alpha(nz));                       % predictive means
+    N = size(alpha,2);  % number of alphas (usually 1; more in case of sampling)
+    Fmu = repmat(ms,1,N) + Ks'*full(alpha(nz,:));        % conditional mean fs|f
+    fmu(id) = sum(Fmu,2)/N;                                   % predictive means
     if Ltril           % L is triangular => use Cholesky parameters (alpha,sW,L)
       V  = L'\(repmat(sW,1,length(id)).*Ks);
       fs2(id) = kss - sum(V.*V,1)';                       % predictive variances
@@ -138,11 +154,15 @@ else
       fs2(id) = kss + sum(Ks.*(L*Ks),1)';                 % predictive variances
     end
     fs2(id) = max(fs2(id),0);   % remove numerical noise i.e. negative variances
+    Fs2 = repmat(fs2(id),1,N);     % we have multiple values in case of sampling
     if nargin<9
-      [lp(id) ymu(id) ys2(id)] = lik(hyp.lik, [], fmu(id), fs2(id));
+      [Lp, Ymu, Ys2] = feval(lik{:},hyp.lik,[],Fmu(:),Fs2(:));
     else
-      [lp(id) ymu(id) ys2(id)] = lik(hyp.lik, ys(id), fmu(id), fs2(id));
+      [Lp, Ymu, Ys2] = feval(lik{:},hyp.lik,repmat(ys(id),1,N),Fmu(:),Fs2(:));
     end
+    lp(id)  = sum(reshape(Lp, [],N),2)/N;    % log probability; sample averaging
+    ymu(id) = sum(reshape(Ymu,[],N),2)/N;          % predictive mean ys|y and ..
+    ys2(id) = sum(reshape(Ys2,[],N),2)/N;                          % .. variance
     nact = id(end);          % set counter to index of last processed data point
   end
   if nargin<9

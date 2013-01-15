@@ -2,7 +2,7 @@
 %
 % See also meanFunctions.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2011-02-18
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
 clear all, close all
 n = 5; D = 2; x = randn(n,D);            % create a random data set
 

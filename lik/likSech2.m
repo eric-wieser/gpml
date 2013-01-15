@@ -11,16 +11,16 @@ function [varargout] = likSech2(hyp, y, mu, s2, inf, i)
 % hyp = [ log(sn)  ]
 %
 % Several modes are provided, for computing likelihoods, derivatives and moments
-% respectively, see likelihoods.m for the details. In general, care is taken
+% respectively, see likFunctions.m for the details. In general, care is taken
 % to avoid numerical issues when the arguments are extreme. The moments
 % \int f^k likSech2(y,f) N(f|mu,var) df are calculated via a Gaussian
 % scale mixture approximation.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-07-21.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2012-11-04.
 %
-% See also likFunctions.m, likLogistic.m.
+% See also LIKFUNCTIONS.M, LIKLOGISTIC.M.
 
-if nargin<2, varargout = {'1'}; return; end   % report number of hyperparameters
+if nargin<3, varargout = {'1'}; return; end   % report number of hyperparameters
 
 sn = exp(hyp); tau = pi/(2*sqrt(3)*sn);
 lZ = log(pi) - log(sn) - log(4*sqrt(3));
@@ -57,11 +57,12 @@ else                                                            % inference mode
           end
         end
       end
-      varargout = {sum(lp),dlp,d2lp,d3lp};
+      varargout = {lp,dlp,d2lp,d3lp};
     else                                                       % derivative mode
       lp_dhyp = 2*tau.*r.*dg - 1;                         % derivative w.r.t. sn
+      dlp_dhyp = -2*tau.*(dg+tau.*r.*d2g);
       d2lp_dhyp = 2*tau.^2.*(2*d2g + tau.*r.*d3g);
-      varargout = {lp_dhyp,d2lp_dhyp};
+      varargout = {lp_dhyp,dlp_dhyp,d2lp_dhyp};
     end
     
   case 'infEP'
