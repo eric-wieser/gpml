@@ -3,12 +3,12 @@ function K = covLINone(hyp, x, z, i)
 % Linear covariance function with a single hyperparameter. The covariance
 % function is parameterized as:
 %
-% k(x^p,x^q) = (x^p'*x^q + 1)/t2;
+% k(x^p,x^q) = (x^p'*x^q + 1)/t^2;
 %
 % where the P matrix is t2 times the unit matrix. The second term plays the
 % role of the bias. The hyperparameter is:
 %
-% hyp = [ log(sqrt(t2)) ]
+% hyp = [ log(t) ]
 %
 % Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-09-10.
 %

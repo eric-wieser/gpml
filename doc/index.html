@@ -3,13 +3,13 @@
 <head>
   <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
   <meta name="author" content="Carl E. Rasmussen and Hannes Nickisch">
-  <meta name="description" content="User documentation of the Gaussian process for machine learning 3.2">
+  <meta name="description" content="User documentation of the Gaussian process for machine learning code 3.3">
   <title>Documentation for GPML Matlab Code</title>
   <link type="text/css" rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>Documentation for GPML Matlab Code version 3.2</h1>
+<h1>Documentation for GPML Matlab Code version 3.3</h1>
 
 <h2>What?</h2>
 
@@ -32,9 +32,9 @@ written by Carl Edward Rasmussen and Chris Williams.</p>
 
 <p>All the code including demonstrations and html documentation can be
 downloaded in a <a
- href="http://gaussianprocess.org/gpml/code/matlab/release/gpml-matlab-v3.2-2013-01-15.tar.gz">tar</a>
+ href="http://gaussianprocess.org/gpml/code/matlab/release/gpml-matlab-v3.3-2013-10-19.tar.gz">tar</a>
 or <a
- href="http://gaussianprocess.org/gpml/code/matlab/release/gpml-matlab-v3.2-2013-01-15.zip">zip</a>
+ href="http://gaussianprocess.org/gpml/code/matlab/release/gpml-matlab-v3.3-2013-10-19.zip">zip</a>
 archive file.</p>
 
 <p>Minor changes and incremental bugfixes to the current version are
@@ -124,7 +124,9 @@ need to know about:</p>
   href="../likFunctions.m"><tt>likFunctions</tt></a> help function (type <tt>help
   likFunctions</tt> to get help). Some examples are 
   <a href="../lik/likGauss.m"><tt>likGauss</tt></a> the Gaussian likelihood for regression, 
-  <a href="../lik/likPoisson.m"><tt>likPoisson</tt></a> the Poisson likelihood for count data, and
+  <a href="../lik/likPoisson.m"><tt>likPoisson</tt></a> the Poisson likelihood for count data,
+  <a href="../lik/likGamma.m"><tt>likGamma</tt></a> the Gamma likelihood for positive data, 
+  <a href="../lik/likBeta.m"><tt>likBeta</tt></a> the Beta likelihood for interval data, and
   <a href="../lik/likLogistic.m"><tt>likLogistic</tt></a> the logistic 
   function used in classification (a.k.a. logistic regression).
   As for the mean and covariance functions there is also a composite likelihood
@@ -144,7 +146,9 @@ need to know about:</p>
   <a href="../inf/infExact.m"><tt>infExact</tt></a> for exact inference 
   (regression with Gaussian likelihood), <a href="../inf/infFITC.m"><tt>infFITC</tt></a> 
   for large scale Gaussian regression,   <a href="../inf/infEP.m"><tt>infEP</tt></a> for the Expectation Propagation
-  algorithm, or <a href="../inf/infFITC_Laplace.m"><tt>infFITC_Laplace</tt></a> for large scale Laplace's approximation. Further usage examples are provided for both 
+  algorithm, <a href="../inf/infVB.m"><tt>infVB</tt></a> and <a href="../inf/infKL.m"><tt>infKL</tt></a> for two 
+  variational approximations based on a lower bound to the marginal likelihood,
+  or <a href="../inf/infFITC_Laplace.m"><tt>infFITC_Laplace</tt></a> for large scale Laplace's approximation. Further usage examples are provided for both 
   <a href="usageRegression.m">regression</a> and 
   <a href="usageClassification.m">classification</a>.
   However, not all combinations of likelihood function and inference method
@@ -161,10 +165,11 @@ need to know about:</p>
 <td align="center">EP<br><a href="../inf/infEP.m">infEP</a></td>
 <td align="center">Laplace<br><a href="../inf/infLaplace.m">infLaplace</a></td>
 <td align="center" rowspan="2">Variational Bayes<br><a href="../inf/infVB.m">infVB</a></td>
+<td align="center" rowspan="2">Kullback Leibler<br><a href="../inf/infKL.m">infKL</a></td>
 <td align="center" rowspan="2">Sampling<br><a href="../inf/infMCMC.m">infMCMC</a></td>
 <td align="center" rowspan="2">LOO<br><a href="../inf/infLOO.m">infLOO</a></td>
 <td rowspan="2">type, output domain<br>&nbsp;</td>
-<td rowspan="2">alternate names<br>&nbsp;</td>
+<td rowspan="2">alternative names<br>&nbsp;</td>
 </tr>
 <td align="left">Likelihood</td>
 <td align="center">FITC<br><a href="../inf/infFITC.m">infFITC</a></td>
@@ -190,11 +195,15 @@ need to know about:</p>
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
@@ -202,7 +211,7 @@ need to know about:</p>
 <td>&nbsp;</td>
 </tr>
 
-<tr><td align="left">Sech-squared</td>
+<tr><td align="left">Sech squared</td>
 <td align="left"><a href="../lik/likSech2.m">likSech2</a></td>
 <td align="center">&nbsp;</td>
 <td align="center"><span class="math"><img
@@ -217,16 +226,20 @@ need to know about:</p>
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
 <td align="left">regression, IR</td>
-<td>&nbsp;</td></tr>
+<td align="left">logistic distribution</td></tr>
 
 <tr><td align="left">Laplacian</td>
 <td align="left"><a href="../lik/likLaplace.m">likLaplace</a></td>
@@ -240,11 +253,15 @@ need to know about:</p>
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
@@ -263,11 +280,15 @@ need to know about:</p>
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
@@ -290,7 +311,11 @@ need to know about:</p>
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
@@ -313,11 +338,15 @@ need to know about:</p>
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
@@ -340,11 +369,15 @@ need to know about:</p>
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
@@ -367,11 +400,15 @@ need to know about:</p>
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
@@ -379,13 +416,57 @@ need to know about:</p>
  <td>logistic regression<br>logit regression</td>
 </tr>
 
+<tr><td align="left">Gamma</td>
+<td align="left"><a href="../lik/likGamma.m">likGamma</a></td>
+<td align="center">&nbsp;</td>
+<td align="center">&nbsp;</td>
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center">&nbsp;</td>
+ <td align="center">&nbsp;</td>
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+ <td align="left">positive data, IR+\{0}</td>
+ <td>nonnegative regression</td>
+</tr>
+
+<tr><td align="left">Inverse Gaussian</td>
+<td align="left"><a href="../lik/likInvGauss.m">likInvGauss</a></td>
+<td align="center">&nbsp;</td>
+<td align="center">&nbsp;</td>
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center">&nbsp;</td>
+ <td align="center">&nbsp;</td>
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+ <td align="left">positive data, IR+\{0}</td>
+ <td>nonnegative regression</td>
+</tr>
+
 <tr><td align="left">Poisson</td>
-<td align="left"><a href="../lik/Poisson.m">likPoisson</a></td>
+<td align="left"><a href="../lik/likPoisson.m">likPoisson</a></td>
 <td align="center">&nbsp;</td>
-<td align="center"><span class="math"><img
+<td align="center">(<span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
- alt="$\checkmark$"></span></td>
+ alt="$\checkmark$"></span>)*</td>
 <td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
@@ -395,7 +476,11 @@ need to know about:</p>
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
- <td align="center"><span class="math"><img
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
  width="18" height="14" align="bottom" border="0"
  src="checkmark.png"
  alt="$\checkmark$"></span></td>
@@ -403,7 +488,31 @@ need to know about:</p>
  <td>Poisson regression</td>
 </tr>
 
+<tr><td align="left">Beta</td>
+<td align="left"><a href="../lik/likBeta.m">likBeta</a></td>
+<td align="center">&nbsp;</td>
+<td align="center">&nbsp;</td>
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center">&nbsp;</td>
+ <td align="center">&nbsp;</td>
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+<td align="center"><span class="math"><img
+ width="18" height="14" align="bottom" border="0"
+ src="checkmark.png"
+ alt="$\checkmark$"></span></td>
+ <td align="left">interval data, [0,1]</td>
+ <td>Beta regression</td>
+</tr>
+
 </table>
+
+<p>* EP might not converge in some cases since quadrature is used.</p>
 
 <p>All of the objects described above are written in a modular way, so
 you can add functionality if you feel constrained despite the
@@ -885,9 +994,9 @@ is best?
 
 <p>Innumerable colleagues have helped to improve this software. Some
 of these are: John Cunningham, M&aacute;t&eacute; Lengyel, Joris Mooij, 
-Iain Murray, David Duvenaud, James Lloyd, Andrew McHutchon, Rowan McAllister, Daniel Marthaler and Chris Williams. Especially Ed Snelson helped to improve the code and to include sparse approximations.</p>
+Iain Murray, David Duvenaud, Andrew McHutchon, Rowan McAllister, Daniel Marthaler, Giampiero Salvi, Mark van der Wilk and Chris Williams. Especially Ed Snelson helped to improve the code and to include sparse approximations. The spectral mixture covariance function was contributed by Andrew Gordon Wilson and periodic covariances were added by James Robert Lloyd.</p>
 
 <hr>
-Last modified: January 15th 2013
+Last modified: October 19th 2013
 </body>
 </html>

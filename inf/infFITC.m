@@ -17,7 +17,7 @@ function [post nlZ dnlZ] = infFITC(hyp, mean, cov, lik, x, y)
 % gp.m and in conjunction with covFITC and likGauss. 
 %
 % Copyright (c) by Ed Snelson, Carl Edward Rasmussen 
-%                                               and Hannes Nickisch, 2012-11-20.
+%                                               and Hannes Nickisch, 2013-10-22.
 %
 % See also INFMETHODS.M, COVFITC.M.
 
@@ -28,10 +28,12 @@ if ~strcmp(likstr,'likGauss')               % NOTE: no explicit call to likGauss
 end
 cov1 = cov{1}; if isa(cov1, 'function_handle'), cov1 = func2str(cov1); end
 if ~strcmp(cov1,'covFITC'); error('Only covFITC supported.'), end    % check cov
+if isfield(hyp,'xu'), cov{3} = hyp.xu; end  % hyp.xu is provided, replace cov{3}
 
 [diagK,Kuu,Ku] = feval(cov{:}, hyp.cov, x);         % evaluate covariance matrix
 m = feval(mean{:}, hyp.mean, x);                          % evaluate mean vector
 [n, D] = size(x); nu = size(Kuu,1);
+cov{3} = reshape(cov{3},[],D);
 
 sn2  = exp(2*hyp.lik);                              % noise variance of likGauss
 snu2 = 1e-6*sn2;                              % hard coded inducing inputs noise
@@ -47,7 +49,7 @@ post.L  = solve_chol(Lu*Luu,eye(nu)) - iKuu;                    % Sigma-inv(Kuu)
 post.sW = ones(n,1)/sqrt(sn2);           % unused for FITC prediction  with gp.m
 
 if nargout>1                                % do we want the marginal likelihood
-  nlZ = sum(log(diag(Lu))) + (sum(log(g_sn2)) + n*log(2*pi) + r'*r - be'*be)/2; 
+  nlZ = sum(log(diag(Lu))) + (sum(log(g_sn2)) + n*log(2*pi) + r'*r - be'*be)/2;
   if nargout>2                                         % do we want derivatives?
     dnlZ = hyp;                                 % allocate space for derivatives
     al = r./sqrt(g_sn2) - (V'*(Lu\be))./g_sn2;          % al = (Kt+sn2*eye(n))\y
@@ -67,6 +69,17 @@ if nargout>1                                % do we want the marginal likelihood
                                  - sum(W.*W,1)*v - sum(sum((R*W').*(B*W'))) )/2; 
     for i = 1:numel(hyp.mean)
       dnlZ.mean(i) = -feval(mean{:}, hyp.mean, x, i)'*al;
+    end
+    if isfield(hyp,'xu')                 % derivatives w.r.t. inducing points xu
+      xu = cov{3};
+
+      iKuu = inv(Kuu+snu2*eye(nu)); Q = Ku'*iKuu*Ku;
+      K = Q + diag(diagK-diag(Q));
+      L = chol(K/sn2+eye(n));         % Cholesky factor of covariance with noise
+      alpha = solve_chol(L,y-m)/sn2;
+      dK = solve_chol(L,eye(n))/sn2 - alpha*alpha';                    % dnlZ/dK
+
+      dnlZ.xu = zeros(size(xu));
     end
   end
 end

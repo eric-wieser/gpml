@@ -9,7 +9,7 @@ function A = meanScale(mean, hyp, x, i)
 % hyp = [ a ]
 %
 % This function doesn't actually compute very much on its own, it merely does
-% some bookkeeping, and calls other mean function to do the actual work.
+% some bookkeeping, and calls other mean functions to do the actual work.
 %
 % Copyright (c) by Carl Edward Rasmussen & Hannes Nickisch 2010-07-15.
 %

@@ -2,7 +2,8 @@
 %
 % See also likFunctions.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+%                                      File automatically generated using noweb.
 clear all, close all
 n = 5; f = randn(n,1);       % create random latent function values
 
@@ -28,6 +29,12 @@ yp = fix(abs(f)) + 1;
 lp0 = {@likPoisson,'logistic'}; hypp0 = [];
 lp1 = {@likPoisson,'exp'};      hypp1 = [];
 
+% set up other GLM likelihoods for positive or interval regression
+lg1 = {@likGamma,'logistic'}; al = 2;    hyp.lik = log(al);
+lg2 = {@likInvGauss,'exp'};   lam = 1.1; hyp.lik = log(lam);
+lg3 = {@likBeta,'expexp'};    phi = 2.1; hyp.lik = log(phi);
+lg4 = {@likBeta,'logit'};     phi = 4.7; hyp.lik = log(phi);
+
 % 0) specify the likelihood function
 lik = lc0; hyp = hypc0; y = yc;
 % lik = lr4; hyp = hypr4; y = yr;
@@ -48,4 +55,4 @@ mu = f; s2 = rand(n,1);
 
 % 3c) obtain lower bound on likelihood
 ga = rand(n,1);
-[h,b,dh,db,d2h,d2b] = feval(lik{:}, hyp, y, [], ga, 'infVB');
+[b,z] = feval(lik{:}, hyp, y, [], ga, 'infVB');

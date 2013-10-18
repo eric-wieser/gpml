@@ -1,21 +1,24 @@
-function [varargout] = likPoisson(link, hyp, y, mu, s2, inf, i)
+function [varargout] = likGamma(link, hyp, y, mu, s2, inf, i)
 
-% likPoisson - Poisson likelihood function for count data y. The expression for
-% the likelihood is 
-%   likPoisson(f) = mu^y * exp(-mu) / y! with mean=variance=mu
-% where mu = g(f) is the Poisson intensity, f is a
-% Gaussian process, y is the non-negative integer count data and 
-% y! = gamma(y+1) its factorial. Hence, we have -- with Zy = gamma(y+1) = y! --
-%   llik(f) = log(likPoisson(f)) = log(g(f))*y - g(f) - log(Zy).
-% The larger the intensity mu, the stronger the likelihood resembles a Gaussian
-% since skewness = 1/sqrt(mu) and kurtosis = 1/mu.
+% likGamma - Gamma likelihood function for strictly positive data y. The
+% expression for the likelihood is 
+%   likGamma(f) = al^al*y^(al+1)/gamma(al) * exp(-y*al/mu) / mu^al with 
+% mean=mu and variance=mu^2/al where mu = g(f) is the Gamma intensity, f is a
+% Gaussian process, y is the strictly positive data. Hence, we have -- with
+% log(Zy) = log(gamma(al)) - al*log(al) + (1-al)*log(y)
+%   llik(f) = log(likGamma(f)) = -al*( log(g(f)) + y/g(f) ) - log(Zy).
+% The larger one chooses al, the stronger the likelihood resembles a Gaussian
+% since skewness = 2/sqrt(al) and kurtosis = 6/al.
 %
 % We provide two inverse link functions 'exp' and 'logistic':
-% For g(f) = exp(f),         we have lik(f) = exp(f*y-exp(f))            / Zy.
-% For g(f) = log(1+exp(f))), we have lik(f) = log^y(1+exp(f)))(1+exp(f)) / Zy.
+%   g(f) = exp(f) and g(f) = log(1+exp(f))).
 % The link functions are located at util/glm_invlink_*.m.
+%
+% Note that for neither link function the likelihood lik(f) is log concave.
 % 
-% Note that for both intensities g(f) the likelihood lik(f) is log concave.
+% The hyperparameters are:
+%
+% hyp = [  log(al)  ]
 %
 % Several modes are provided, for computing likelihoods, derivatives and moments
 % respectively, see likFunctions.m for the details. In general, care is taken
@@ -23,18 +26,21 @@ function [varargout] = likPoisson(link, hyp, y, mu, s2, inf, i)
 %
 % See also LIKFUNCTIONS.M.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-16.
+% Copyright (c) by Hannes Nickisch, 2013-10-16.
 
-if nargin<4, varargout = {'0'}; return; end   % report number of hyperparameters
+if nargin<4, varargout = {'1'}; return; end   % report number of hyperparameters
+
+al = exp(hyp);
 
 if nargin<6                              % prediction mode if inf is not present
   if numel(y)==0,  y = zeros(size(mu)); end
   s2zero = 1; if nargin>4, if norm(s2)>0, s2zero = 0; end, end         % s2==0 ?
   if s2zero                                                    % log probability
     lg = g(mu,link);
-    lp = lg.*y - exp(lg) - gammaln(y+1);
+    lZy = gammaln(al) - al*log(al) + (1-al)*log(y);     % normalisation constant
+    lp = -al*(lg+y./exp(lg)) - lZy;
   else
-    lp = likPoisson(link, hyp, y, mu, s2, 'infEP');
+    lp = likGamma(link, hyp, y, mu, s2, 'infEP');
   end
   ymu = {}; ys2 = {};
   if nargout>1                                 % compute y moments by quadrature
@@ -45,7 +51,7 @@ if nargin<6                              % prediction mode if inf is not present
     ymu = exp(logsumexp2(lg+lw));     % first moment using Gaussian-Hermite quad
     if nargout>2
       elg = exp(lg);
-      yv = elg;                      % second y moment from Poisson distribution
+      yv = elg.^2/al;                  % second y moment from Gamma distribution
       ys2 = (yv+(elg-ymu*oN).^2)*w;
     end
   end
@@ -53,30 +59,35 @@ if nargin<6                              % prediction mode if inf is not present
 else
   switch inf 
   case 'infLaplace'
+    [lg,dlg,d2lg,d3lg] = g(mu,link); elg = exp(lg);
     if nargin<7                                             % no derivative mode
-      [lg,dlg,d2lg,d3lg] = g(mu,link); elg = exp(lg);
-      lp = lg.*y - elg - gammaln(y+1);
+      lZy = gammaln(al) - al*log(al) + (1-al)*log(y);   % normalisation constant
+      lp = -al*(lg+y./elg) - lZy;
       dlp = {}; d2lp = {}; d3lp = {};                         % return arguments
       if nargout>1
-        dlp = dlg.*(y-elg);                  % dlp, derivative of log likelihood
+        dlp = -al*dlg.*(1-y./elg);           % dlp, derivative of log likelihood
         if nargout>2                    % d2lp, 2nd derivative of log likelihood
-          d2lp = d2lg.*(y-elg) - dlg.*dlg.*elg;
+          d2lp = -al*d2lg.*(1-y./elg) - al*dlg.*dlg.*y./elg;
           if nargout>3                  % d3lp, 3rd derivative of log likelihood
-            d3lp = d3lg.*(y-elg) - dlg.*(dlg.*dlg+3*d2lg).*elg;
+            d3lp = -al*d3lg.*(1-y./elg) + al*dlg.*(dlg.*dlg-3*d2lg).*y./elg;
           end
         end
       end
       varargout = {lp,dlp,d2lp,d3lp};
     else                                                       % derivative mode
-      varargout = {[],[],[]};                         % derivative w.r.t. hypers
+      dlZy = al*psi(0,al) - al*(log(al) + 1 + log(y));
+      lp_dhyp = -al*(lg+y./elg) - dlZy; % derivative of log likelihood w.r.t. al
+      dlp_dhyp = -al*dlg.*(1-y./elg);                         % first derivative
+      d2lp_dhyp = -al*d2lg.*(1-y./elg) - al*dlg.*dlg.*y./elg;   % and als second
+      varargout = {lp_dhyp,dlp_dhyp,d2lp_dhyp};
     end
 
   case 'infEP'
     if nargin<7                                             % no derivative mode
-      % Since we are not aware of an analytical expression of the integral,
-      % hence we use quadrature.
+      % Since we are not aware of an analytical expression of the integral, 
+      % we use quadrature.
       varargout = cell(1,nargout);
-      [varargout{:}] = lik_epquad({@likPoisson,link},hyp,y,mu,s2);
+      [varargout{:}] = lik_epquad({@likGamma,link},hyp,y,mu,s2);
     else                                                       % derivative mode
       varargout = {[]};                                     % deriv. wrt hyp.lik
     end

@@ -44,4 +44,5 @@
 %
 % See also doc/usageMean.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+%                                      File automatically generated using noweb.

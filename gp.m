@@ -44,7 +44,8 @@ function [varargout] = gp(hyp, inf, mean, cov, lik, x, y, xs, ys)
 % 
 % See also covFunctions.m, infMethods.m, likFunctions.m, meanFunctions.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+%                                      File automatically generated using noweb.
 if nargin<7 || nargin>9
   disp('Usage: [nlZ dnlZ          ] = gp(hyp, inf, mean, cov, lik, x, y);')
   disp('   or: [ymu ys2 fmu fs2   ] = gp(hyp, inf, mean, cov, lik, x, y, xs);')
@@ -158,7 +159,8 @@ else
     if nargin<9
       [Lp, Ymu, Ys2] = feval(lik{:},hyp.lik,[],Fmu(:),Fs2(:));
     else
-      [Lp, Ymu, Ys2] = feval(lik{:},hyp.lik,repmat(ys(id),1,N),Fmu(:),Fs2(:));
+      Ys = repmat(ys(id),1,N);
+      [Lp, Ymu, Ys2] = feval(lik{:},hyp.lik,Ys(:),Fmu(:),Fs2(:));
     end
     lp(id)  = sum(reshape(Lp, [],N),2)/N;    % log probability; sample averaging
     ymu(id) = sum(reshape(Ymu,[],N),2)/N;          % predictive mean ys|y and ..

@@ -2,7 +2,8 @@
 %
 % See also meanFunctions.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+%                                      File automatically generated using noweb.
 clear all, close all
 n = 5; D = 2; x = randn(n,D);            % create a random data set
 

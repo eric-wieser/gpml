@@ -1,6 +1,6 @@
 function K = covSEiso(hyp, x, z, i)
 
-% Squared Exponential covariance function with isotropic distance measure. The 
+% Squared Exponential covariance function with isotropic distance measure. The
 % covariance function is parameterized as:
 %
 % k(x^p,x^q) = sf^2 * exp(-(x^p - x^q)'*inv(P)*(x^p - x^q)/2) 

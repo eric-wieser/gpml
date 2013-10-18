@@ -8,7 +8,7 @@ function [varargout] = likErf(hyp, y, mu, s2, inf, i)
 % respectively, see likFunctions.m for the details. In general, care is taken
 % to avoid numerical issues when the arguments are extreme.
 % 
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2010-07-22.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-02-05.
 %
 % See also LIKFUNCTIONS.M.
 
@@ -63,9 +63,7 @@ else                                                            % inference mode
         if numel(y)==0, y=1; end
         n_p = gauOverCumGauss(z,exp(lZ));
         dlZ = y.*n_p./sqrt(1+s2);                      % 1st derivative wrt mean
-        if nargout>2
-          d2lZ = -n_p.*(z+n_p)./(1+s2);                % 2nd derivative wrt mean
-        end
+        if nargout>2, d2lZ = -n_p.*(z+n_p)./(1+s2); end         % 2nd derivative
       end
       varargout = {lZ,dlZ,d2lZ};
     else                                                       % derivative mode
@@ -73,41 +71,19 @@ else                                                            % inference mode
     end
   
   case 'infVB'
-    if nargin<6                                             % no derivative mode
-      % naive variational lower bound based on asymptotical properties of lik
-      % normcdf(t) -> -(t²-2dt+c)/2 for t->-oo (tight lower bound)
-      d =  0.158482605320942;
-      c = -1.785873318175113;
-      ga = s2; n = numel(ga); b = d*y.*ones(n,1); db = zeros(n,1); d2b = db;
-      h = -2*c*ones(n,1); h(ga>1) = Inf; dh = zeros(n,1); d2h = dh;   
-      varargout = {h,b,dh,db,d2h,d2b};
-    else                                                       % derivative mode
-      varargout = {[]};                                     % deriv. wrt hyp.lik
-    end
+    % naive variational lower bound based on asymptotical properties of lik
+    % normcdf(t) -> -(t²-2dt+c)/2 for t->-oo (tight lower bound)
+    % the bound has the form: (b+z/ga)*f - f.^2/(2*ga) - h(ga)/2
+    d =  0.158482605320942;
+    n = numel(s2); b = d*y.*ones(n,1); z = zeros(n,1);
+    varargout = {b,z};
   end
 end
 
 function [p,lp] = cumGauss(y,f)
   if numel(y)>0, yf = y.*f; else yf = f; end     % product of latents and labels
-  p  = (1+erf(yf/sqrt(2)))/2;                                       % likelihood
-  if nargout>1, lp = logphi(yf,p); end                          % log likelihood
-
-% safe implementation of the log of phi(x) = \int_{-\infty}^x N(f|0,1) df
-% logphi(z) = log(normcdf(z))
-function lp = logphi(z,p)
-  lp = zeros(size(z));                                         % allocate memory
-  zmin = -6.2; zmax = -5.5;
-  ok = z>zmax;                                % safe evaluation for large values
-  bd = z<zmin;                                                 % use asymptotics
-  ip = ~ok & ~bd;                             % interpolate between both of them
-  lam = 1./(1+exp( 25*(1/2-(z(ip)-zmin)/(zmax-zmin)) ));       % interp. weights
-  lp( ok) = log( p(ok) );
-  % use lower and upper bound acoording to Abramowitz&Stegun 7.1.13 for z<0
-  % lower -log(pi)/2 -z.^2/2 -log( sqrt(z.^2/2+2   ) -z/sqrt(2) )
-  % upper -log(pi)/2 -z.^2/2 -log( sqrt(z.^2/2+4/pi) -z/sqrt(2) )
-  % the lower bound captures the asymptotics
-  lp(~ok) = -log(pi)/2 -z(~ok).^2/2 -log( sqrt(z(~ok).^2/2+2)-z(~ok)/sqrt(2) );
-  lp( ip) = (1-lam).*lp(ip) + lam.*log( p(ip) );
+  p = (1+erf(yf/sqrt(2)))/2;                                        % likelihood
+  if nargout>1, lp = logphi(yf); end                            % log likelihood
   
 function n_p = gauOverCumGauss(f,p)
   n_p = zeros(size(f));       % safely compute Gaussian over cumulative Gaussian

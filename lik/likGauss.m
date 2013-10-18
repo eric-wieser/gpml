@@ -13,7 +13,8 @@ function [varargout] = likGauss(hyp, y, mu, s2, inf, i)
 % respectively, see likFunctions.m for the details. In general, care is taken
 % to avoid numerical issues when the arguments are extreme.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-01-21
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+%                                      File automatically generated using noweb.
 %
 % See also LIKFUNCTIONS.M.
 
@@ -78,24 +79,10 @@ else
     end
 
   case 'infVB'
-    if nargin<6
-      % variational lower site bound
-      % t(s) = exp(-(y-s)^2/2sn2)/sqrt(2*pi*sn2)
-      % the bound has the form: b*s - s.^2/(2*ga) - h(ga)/2 with b=y/ga
-      ga = s2; n = numel(ga); b = y./ga; y = y.*ones(n,1);
-      db = -y./ga.^2; d2b = 2*y./ga.^3;
-      h = zeros(n,1); dh = h; d2h = h;         % allocate memory for return args
-      id = ga(:)<=sn2+1e-8;                            % OK below noise variance
-      h(id) = y(id).^2./ga(id) + log(2*pi*sn2); h(~id) = Inf;
-      dh(id) = -y(id).^2./ga(id).^2;
-      d2h(id) = 2*y(id).^2./ga(id).^3;
-      id = ga<0; h(id) = Inf; dh(id) = 0; d2h(id) = 0;     % neg. var. treatment
-      varargout = {h,b,dh,db,d2h,d2b};
-    else
-      ga = s2; n = numel(ga); 
-      dhhyp = zeros(n,1); dhhyp(ga(:)<=sn2) = 2;
-      dhhyp(ga<0) = 0;              % negative variances get a special treatment
-      varargout = {dhhyp};                               % deriv. w.r.t. hyp.lik
-    end
+    % variational lower site bound
+    % t(s) = exp(-(y-s)^2/2sn2)/sqrt(2*pi*sn2)
+    % the bound has the form: (b+z/ga)*f - f.^2/(2*ga) - h(ga)/2
+    n = numel(s2); b = zeros(n,1); y = y.*ones(n,1); z = y;
+    varargout = {b,z};
   end
 end
