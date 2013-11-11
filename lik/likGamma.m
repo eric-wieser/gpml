@@ -2,7 +2,7 @@ function [varargout] = likGamma(link, hyp, y, mu, s2, inf, i)
 
 % likGamma - Gamma likelihood function for strictly positive data y. The
 % expression for the likelihood is 
-%   likGamma(f) = al^al*y^(al+1)/gamma(al) * exp(-y*al/mu) / mu^al with 
+%   likGamma(f) = al^al*y^(al-1)/gamma(al) * exp(-y*al/mu) / mu^al with 
 % mean=mu and variance=mu^2/al where mu = g(f) is the Gamma intensity, f is a
 % Gaussian process, y is the strictly positive data. Hence, we have -- with
 % log(Zy) = log(gamma(al)) - al*log(al) + (1-al)*log(y)
@@ -78,7 +78,7 @@ else
       dlZy = al*psi(0,al) - al*(log(al) + 1 + log(y));
       lp_dhyp = -al*(lg+y./elg) - dlZy; % derivative of log likelihood w.r.t. al
       dlp_dhyp = -al*dlg.*(1-y./elg);                         % first derivative
-      d2lp_dhyp = -al*d2lg.*(1-y./elg) - al*dlg.*dlg.*y./elg;   % and als second
+      d2lp_dhyp = -al*d2lg.*(1-y./elg) - al*dlg.*dlg.*y./elg;  % and also second
       varargout = {lp_dhyp,dlp_dhyp,d2lp_dhyp};
     end
 

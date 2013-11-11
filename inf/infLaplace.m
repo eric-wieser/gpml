@@ -33,7 +33,7 @@ else
   end
 end
 
-% 1) switch optimisation methods
+% switch between optimisation methods
 alpha = irls(alpha, m,K,likfun, opt);                         % run optimisation
 
 f = K*alpha+m;                                  % compute latent function values
@@ -42,7 +42,7 @@ last_alpha = alpha;                                     % remember for next call
 post.alpha = alpha;                            % return the posterior parameters
 post.sW = sqrt(abs(W)).*sign(W);             % preserve sign in case of negative
 
-% 2) diagnose optimality
+% diagnose optimality
 err = @(x,y) norm(x-y)/max([norm(x),norm(y),1]);   % we need to have alpha = dlp
 % dev = err(alpha,dlp);  if dev>1e-4, warning('Not at optimum %1.2e.',dev), end
 
@@ -117,10 +117,8 @@ function alpha = irls(alpha, m,K,likfun, opt)
   it = 0;                          % this happens for the Student's t likelihood
   while Psi_old - Psi_new > tol && it<maxit                       % begin Newton
     Psi_old = Psi_new; it = it+1;
-
-    % 3) limit stepsize
+    % limit stepsize
     W = max(W,Wmin); % reduce step size by increasing curvature of problematic W
-
     sW = sqrt(W); L = chol(eye(n)+sW*sW'.*K);            % L'*L=B=eye(n)+sW*K*sW
     b = W.*(f-m) + dlp;
     dalpha = b - sW.*solve_chol(L,sW.*(K*b)) - alpha; % Newton dir + line search

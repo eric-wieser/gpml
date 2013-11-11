@@ -117,5 +117,5 @@
 %
 % See also doc/usageCov.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2014-08-14.
 %                                      File automatically generated using noweb.

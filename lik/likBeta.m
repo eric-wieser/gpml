@@ -3,7 +3,7 @@ function [varargout] = likBeta(link, hyp, y, mu, s2, inf, i)
 % likBeta - Beta likelihood function for interval data y from [0,1]. 
 % The expression for the likelihood is
 %   likBeta(f) = 1/Z * y^(mu*phi-1) * (1-y)^((1-mu)*phi-1) with 
-% mean=mu and variance=mu*(1-mu)*(1+phi) where mu = g(f) is the Beta intensity,
+% mean=mu and variance=mu*(1-mu)/(1+phi) where mu = g(f) is the Beta intensity,
 % f is a Gaussian process, y is the interval data and
 % Z = Gamma(phi)/Gamma(phi*mu)/Gamma(phi*(1-mu)).
 % Hence, we have
@@ -25,7 +25,7 @@ function [varargout] = likBeta(link, hyp, y, mu, s2, inf, i)
 %
 % See also LIKFUNCTIONS.M.
 %
-% Copyright (c) by Hannes Nickisch, 2013-10-16.
+% Copyright (c) by Hannes Nickisch, 2014-03-04.
 
 if nargin<4, varargout = {'1'}; return; end   % report number of hyperparameters
 
@@ -50,7 +50,7 @@ if nargin<6                              % prediction mode if inf is not present
     ymu = exp(logsumexp2(lg+lw));     % first moment using Gaussian-Hermite quad
     if nargout>2
       elg = exp(lg);
-      yv = elg.*(1-elg)*(1+phi);        % second y moment from Beta distribution
+      yv = elg.*(1-elg)/(1+phi);        % second y moment from Beta distribution
       ys2 = (yv+(elg-ymu*oN).^2)*w;
     end
   end

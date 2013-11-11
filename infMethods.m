@@ -49,5 +49,5 @@
 % For more information on the individual approximation methods and their
 % implementations, see the separate inf??.m files. See also gp.m
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2014-08-14.
 %                                      File automatically generated using noweb.

@@ -7,14 +7,14 @@ function [post, nlZ, dnlZ] = infVB(hyp, mean, cov, lik, x, y, opt)
 %
 % Minimisation of an upper bound on the negative marginal likelihood using a
 % sequence of infLaplace calls where the smoothed likelihood
-% likVB(f) = lik(..,g,..) + exp(b*(f-g)), g = sign(f)*sqrt((f-z)^2+v)+z, where
+% likVB(f) = lik(..,g,..) * exp(b*(f-g)), g = sign(f-z)*sqrt((f-z)^2+v)+z, where
 %     v   .. marginal variance = (positive) smoothing width, and
 %     lik .. lik function such that p(y|f)=lik(..,f,..).
 %
 % The problem is convex whenever the likelihood is log-concave. At the end, the
 % optimal width W is obtained analytically.
 %
-% Copyright (c) by Hannes Nickisch 2013-10-06.
+% Copyright (c) by Hannes Nickisch 2014-03-20.
 %
 % See also INFMETHODS.M.
 
@@ -47,11 +47,9 @@ alpha = post.alpha; post.sW = sW;                         % posterior parameters
 post.L = chol(eye(n)+sW*sW'.*K);            % recompute L'*L = B =eye(n)+sW*K*sW
 
 ga = 1./(sW.*sW); be = b+z./ga;        % variance, lower bound offset from likVB
-h = f.*(2*be-f./ga) - 2*lp - v./ga;     % h(ga) = s*(2*b-f/ga)+ h*(s) - v*(1/ga) 
-h = h - z.*m.*(2-m./(z+b))./ga;   % correction term for symmetric continuous lik
-c = b+(z-m)./ga;
-t = post.L'\(sW.*(K*c));               % t'*t-c'*K*c = -c'*inv(inv(K)+diag(W))*c
-nlZ = sum(log(diag(post.L))) + ( sum(h) + t'*t-c'*K*c )/2;   % variational bound
+h = f.*(2*be-f./ga) - 2*lp - v./ga;     % h(ga) = s*(2*b-f/ga)+ h*(s) - v*(1/ga)
+c = b+(z-m)./ga; t = post.L'\(c./sW);
+nlZ = sum(log(diag(post.L))) + (sum(h) + t'*t - (be.*be)'*ga )/2;   % var. bound
 
 if nargout>2                                           % do we want derivatives?
   iKtil = repmat(sW,1,n).*solve_chol(post.L,diag(sW));% sW*B^-1*sW=inv(K+inv(W))
@@ -78,7 +76,7 @@ if nargout>2                                           % do we want derivatives?
 end
 
 % Smoothed likelihood function; instead of p(y|f)=lik(..,f,..) compute
-%   likVB(f) = lik(..,g,..) + exp(b*(f-g)), g = sign(f)*sqrt((f-z)^2+v)+z, where
+%   likVB(f) = lik(..,g,..)*exp(b*(f-g)), g = sign(f-z)*sqrt((f-z)^2+v)+z, where
 %     v   .. marginal variance = (positive) smoothing width, and
 %     lik .. lik function such that feval(lik{:},varargin{:}) yields a result.
 % The smoothing results from a lower bound on the likelihood:

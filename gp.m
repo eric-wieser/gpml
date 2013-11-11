@@ -44,7 +44,7 @@ function [varargout] = gp(hyp, inf, mean, cov, lik, x, y, xs, ys)
 % 
 % See also covFunctions.m, infMethods.m, likFunctions.m, meanFunctions.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2014-08-14.
 %                                      File automatically generated using noweb.
 if nargin<7 || nargin>9
   disp('Usage: [nlZ dnlZ          ] = gp(hyp, inf, mean, cov, lik, x, y);')
@@ -58,6 +58,7 @@ if ischar(mean) || isa(mean, 'function_handle'), mean = {mean}; end  % make cell
 if isempty(cov), error('Covariance function cannot be empty'); end  % no default
 if ischar(cov)  || isa(cov,  'function_handle'), cov  = {cov};  end  % make cell
 cov1 = cov{1}; if isa(cov1, 'function_handle'), cov1 = func2str(cov1); end
+if strcmp(cov1,'covFITC') && isfield(hyp,'xu'), cov{3} = hyp.xu; end %use hyp.xu
 if isempty(inf)                                   % set default inference method
   if strcmp(cov1,'covFITC'), inf = @infFITC; else inf = @infExact; end
 else
@@ -107,7 +108,7 @@ try                                                  % call the inference method
       post = inf(hyp, mean, cov, lik, x, y);
     end
   else
-    if nargout==1
+    if nargout<=1
       [post nlZ] = inf(hyp, mean, cov, lik, x, y); dnlZ = {};
     else
       [post nlZ dnlZ] = inf(hyp, mean, cov, lik, x, y);
@@ -135,7 +136,7 @@ else
     K = feval(cov{:}, hyp.cov, x(nz,:));
     L = chol(eye(sum(nz))+sW*sW'.*K);
   end
-  Ltril = all(all(tril(L,-1)==0));            % is L an upper triangular matrix?
+  Lchol = all(all(tril(L,-1)==0)&diag(L)'>0)&isreal(diag(L)); % L contains chol?
   ns = size(xs,1);                                       % number of data points
   nperbatch = 1000;                       % number of data points per mini batch
   nact = 0;                       % number of already processed test data points
@@ -143,12 +144,16 @@ else
   while nact<ns               % process minibatches of test cases to save memory
     id = (nact+1):min(nact+nperbatch,ns);               % data points to process
     kss = feval(cov{:}, hyp.cov, xs(id,:), 'diag');              % self-variance
-    Ks  = feval(cov{:}, hyp.cov, x(nz,:), xs(id,:));         % cross-covariances
+    if strcmp(cov1,'covFITC')                                % cross-covariances
+      Ks = feval(cov{:}, hyp.cov, x, xs(id,:)); Ks = Ks(nz,:); % res indep. of x
+    else
+      Ks = feval(cov{:}, hyp.cov, x(nz,:), xs(id,:));        % avoid computation
+    end
     ms = feval(mean{:}, hyp.mean, xs(id,:));
     N = size(alpha,2);  % number of alphas (usually 1; more in case of sampling)
     Fmu = repmat(ms,1,N) + Ks'*full(alpha(nz,:));        % conditional mean fs|f
     fmu(id) = sum(Fmu,2)/N;                                   % predictive means
-    if Ltril           % L is triangular => use Cholesky parameters (alpha,sW,L)
+    if Lchol    % L contains chol decomp => use Cholesky parameters (alpha,sW,L)
       V  = L'\(repmat(sW,1,length(id)).*Ks);
       fs2(id) = kss - sum(V.*V,1)';                       % predictive variances
     else                % L is not triangular => use alternative parametrisation

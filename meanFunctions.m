@@ -7,6 +7,7 @@
 %   meanOne       - one mean function
 %   meanConst     - constant mean function
 %   meanLinear    - linear mean function
+%   meanPoly      - polynomial mean function
 % 
 % composite covariance functions (see explanation at the bottom):
 %
@@ -44,5 +45,5 @@
 %
 % See also doc/usageMean.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2014-08-14.
 %                                      File automatically generated using noweb.

@@ -2,9 +2,9 @@ function [varargout] = likMix(lik, hyp, varargin)
 
 % likMix - Mixture of likelihoods for regression/classification. 
 % The expression for the likelihood is 
-%   log( likMix(t) ) = sum_i=1..m  w_i * log( lik_i(t) ),
+%   likMix(t) = sum_i=1..m  w_i * lik_i(t),
 % where lik_i are the m individual likelihood functions combined by a weighted
-% sum in the log domain with weights wi.
+% sum with weights wi.
 %
 % The hyperparameters are:
 %
@@ -25,7 +25,7 @@ function [varargout] = likMix(lik, hyp, varargin)
 % respectively, see likFunctions.m for the details. In general, care is taken
 % to avoid numerical issues when the arguments are extreme.
 %
-% Copyright (c) by Hannes Nickisch and Rowan McAllister, 2013-10-16.
+% Copyright (c) by Hannes Nickisch and Rowan McAllister, 2013-10-23.
 %
 % See also LIKFUNCTIONS.M.
 

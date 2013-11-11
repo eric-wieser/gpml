@@ -128,8 +128,8 @@ else                                                            % inference mode
         dvp = -2*tvar - sqrt(2)*tmu;
         dzm = (-s2(id)./sn(id)-tmu.*sn(id)/sqrt(2)) ./ sqrt(s2(id));
         dvm = -2*tvar + sqrt(2)*tmu;
-        lezp = lerfc(zp); % ap = exp(vp).*ezp
-        lezm = lerfc(zm); % am = exp(vm).*ezm
+        lezp = logerfc(zp); % ap = exp(vp).*ezp
+        lezm = logerfc(zm); % am = exp(vm).*ezm
         vmax = max([vp+lezp,vm+lezm],[],2); % subtract max to avoid numerical pb
         ep  = exp(vp+lezp-vmax);
         em  = exp(vm+lezm-vmax);
@@ -149,20 +149,9 @@ else                                                            % inference mode
   end
 end
 
-% numerically safe implementation of f(t) = log(1-erf(t)) = log(erfc(t))
-function f = lerfc(t)
-  f  = zeros(size(t));
-  tmin = 20; tmax = 25;
-  ok = t<tmin;                               % log(1-erf(t)) is safe to evaluate
-  bd = t>tmax;                                            % evaluate tight bound
-  interp = ~ok & ~bd;                % linearly interpolate between both of them
-  f(~ok) = log(2/sqrt(pi)) -t(~ok).^2 -log(t(~ok)+sqrt( t(~ok).^2+4/pi ));
-  lam = 1./(1+exp( 12*(1/2-(t(interp)-tmin)/(tmax-tmin)) ));   % interp. weights
-  f(interp) = lam.*f(interp) + (1-lam).*log(erfc( t(interp) ));
-  f(ok) = f(ok) + log(erfc( t(ok) ));                                % safe eval
-%  computes y = ( (exp(A).*B)*z ) ./ ( exp(A)*x ) in a numerically safe way
-%  The function is not general in the sense that it yields correct values for
-%  all types of inputs. We assume that the values are close together.
+% logerfc(z) = log(1-erf(z))
+function lc = logerfc(z)
+  lc = logphi(-z*sqrt(2)) + log(2);
 
 function y = expABz_expAx(A,x,B,z)
   N = size(A,2);  maxA = max(A,[],2);      % number of columns, max over columns

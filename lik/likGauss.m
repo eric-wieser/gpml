@@ -13,7 +13,7 @@ function [varargout] = likGauss(hyp, y, mu, s2, inf, i)
 % respectively, see likFunctions.m for the details. In general, care is taken
 % to avoid numerical issues when the arguments are extreme.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-22.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2014-08-14.
 %                                      File automatically generated using noweb.
 %
 % See also LIKFUNCTIONS.M.
