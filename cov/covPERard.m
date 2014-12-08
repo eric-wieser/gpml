@@ -40,7 +40,7 @@ if nocov && nargin<2 || ~nocov && nargin<3         % report number of parameters
   K = ['(D+',feval(cov{:}),')']; return
 end
 if nocov && nargin<3 || ~nocov && nargin<4, z = []; end    % make sure, z exists
-xeqz = numel(z)==0; dg = strcmp(z,'diag') && numel(z)>0;        % determine mode
+xeqz = isempty(z); dg = strcmp(z,'diag');                       % determine mode
 
 [n,D] = size(x);
 p = exp(hyp(1:D));

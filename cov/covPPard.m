@@ -16,13 +16,13 @@ function K = covPPard(v, hyp, x, z, i)
 %         log(ell_D)
 %         log(sf) ]
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2013-10-14.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2015-02-09.
 %
 % See also COVFUNCTIONS.M.
 
 if nargin<3, K = '(D+1)'; return; end              % report number of parameters
 if nargin<4, z = []; end                                   % make sure, z exists
-xeqz = numel(z)==0; dg = strcmp(z,'diag') && numel(z)>0;        % determine mode
+xeqz = isempty(z); dg = strcmp(z,'diag');                       % determine mode
 
 [n,D] = size(x);
 ell = exp(hyp(1:D));
@@ -43,8 +43,9 @@ switch v
           df = @(r,j)     (j+3)   + 2*(6*j^2+36*j+45)/15*r    ...
                                 + (j^3+9*j^2+23*j+15)/ 5*r.^2;
 end
- pp = @(r,j,v,f) max(1-r,0).^(j+v).*f(r,j);
-dpp = @(r,j,v,f) max(1-r,0).^(j+v-1).*r.*( (j+v)*f(r,j) - max(1-r,0).*df(r,j) );
+ cs = @(r,e) (r<1).*max(1-r,0).^e;
+ pp = @(r,j,v,f)    cs(r,j+v  ).*  f(r,j);
+dpp = @(r,j,v,f) r.*cs(r,j+v-1).*( f(r,j)*(j+v) - max(1-r,0).*df(r,j) );
 
 % precompute squared distances
 if dg                                                               % vector kxx

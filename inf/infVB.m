@@ -1,9 +1,9 @@
 function [post, nlZ, dnlZ] = infVB(hyp, mean, cov, lik, x, y, opt)
 
 % Variational approximation to the posterior Gaussian process.
-% The function takes a specified covariance function (see covFunction.m) and
-% likelihood function (see likFunction.m), and is designed to be used with
-% gp.m. See also infFunctions.m.
+% The function takes a specified covariance function (see covFunctions.m) and
+% likelihood function (see likFunctions.m), and is designed to be used with
+% gp.m. See also infMethods.m.
 %
 % Minimisation of an upper bound on the negative marginal likelihood using a
 % sequence of infLaplace calls where the smoothed likelihood
@@ -19,8 +19,10 @@ function [post, nlZ, dnlZ] = infVB(hyp, mean, cov, lik, x, y, opt)
 % See also INFMETHODS.M.
 
 n = size(x,1);
-K = feval(cov{:}, hyp.cov, x);                  % evaluate the covariance matrix
-m = feval(mean{:}, hyp.mean, x);                      % evaluate the mean vector
+if isnumeric(cov),  K = cov;                    % use provided covariance matrix
+else K = feval(cov{:},  hyp.cov,  x); end       % evaluate the covariance matrix
+if isnumeric(mean), m = mean;                         % use provided mean vector
+else m = feval(mean{:}, hyp.mean, x); end             % evaluate the mean vector
 if iscell(lik), likstr = lik{1}; else likstr = lik; end
 if ~ischar(likstr), likstr = func2str(likstr); end
 

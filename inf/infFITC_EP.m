@@ -20,8 +20,8 @@ function [post nlZ dnlZ] = infFITC_EP(hyp, mean, cov, lik, x, y)
 % Sigma = inv(inv(K)+diag(W)) = diag(d) + P'*R0'*R'*R*R0*P. Here, we use the
 % site parameters: b,w=$b,\pi$=tnu,ttau, P=$P'$, nn=$\nu$, gg=$\gamma$
 %             
-% The function takes a specified covariance function (see covFunction.m) and
-% likelihood function (see likFunction.m), and is designed to be used with
+% The function takes a specified covariance function (see covFunctions.m) and
+% likelihood function (see likFunctions.m), and is designed to be used with
 % gp.m and in conjunction with covFITC.
 %
 % The inducing points can be specified through 1) the 2nd covFITC parameter or
@@ -112,7 +112,7 @@ last_ttau = ttau; last_tnu = tnu;                       % remember for next call
 
 post.sW = sqrt(ttau);                  % unused for FITC_EP prediction with gp.m
 dd = 1./(d0+1./ttau);
-alpha = tnu./ttau.*dd;
+alpha = tnu./(1+d0.*ttau);
 RV = R*V; R0tV = R0'*V;
 alpha = alpha - (RV'*(RV*alpha)).*dd;     % long alpha vector for ordinary infEP
 post.alpha = R0tV*alpha;       % alpha = R0'*V*inv(Kt+diag(1./ttau))*(tnu./ttau)
@@ -198,7 +198,7 @@ function [nlZ,nu_n,tau_n] = ...
   nu = size(gg,1);
   U = (R0*P0)'.*repmat(1./sqrt(d0+1./ttau),1,nu);
   L = chol(eye(nu)+U'*U);
-  ld = 2*sum(log(diag(L))) + sum(log(d0+1./ttau)) + sum(log(ttau));
+  ld = 2*sum(log(diag(L))) + sum(log(1+d0.*ttau));
   t = T*tnu; tnu_Sigma_tnu = tnu'*(d.*tnu) + t'*t;
   nlZ = ld/2 -sum(lZ) -tnu_Sigma_tnu/2  ...
     -(nu_n-m.*tau_n)'*((ttau./tau_n.*(nu_n-m.*tau_n)-2*tnu)./(ttau+tau_n))/2 ...

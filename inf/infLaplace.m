@@ -1,9 +1,9 @@
 function [post nlZ dnlZ] = infLaplace(hyp, mean, cov, lik, x, y, opt)
 
 % Laplace approximation to the posterior Gaussian process.
-% The function takes a specified covariance function (see covFunction.m) and
-% likelihood function (see likFunction.m), and is designed to be used with
-% gp.m. See also infFunctions.m.
+% The function takes a specified covariance function (see covFunctions.m) and
+% likelihood function (see likFunctions.m), and is designed to be used with
+% gp.m. See also infMethods.m.
 %
 % Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch 2013-05-02.
 %

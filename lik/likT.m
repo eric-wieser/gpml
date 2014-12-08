@@ -29,7 +29,7 @@ lZ = gammaln(nu/2+1/2) - gammaln(nu/2) - log(nu*pi*sn2)/2;
 
 if nargin<5                              % prediction mode if inf is not present
   if numel(y)==0,  y = zeros(size(mu)); end
-  s2zero = 1; if nargin>3, if norm(s2)>0, s2zero = 0; end, end         % s2==0 ?
+  s2zero = 1; if nargin>3&&numel(s2)>0&&norm(s2)>eps, s2zero = 0; end  % s2==0 ?
   if s2zero                                         % log probability evaluation
     lp = lZ - (nu+1)*log( 1+(y-mu).^2./(nu.*sn2) )/2; s2 = 0;
   else                                                              % prediction

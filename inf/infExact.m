@@ -4,7 +4,7 @@ function [post nlZ dnlZ] = infExact(hyp, mean, cov, lik, x, y)
 % of the posterior, the negative log marginal likelihood and its derivatives
 % w.r.t. the hyperparameters. See also "help infMethods".
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2014-08-14.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2015-05-18.
 %                                      File automatically generated using noweb.
 %
 % See also INFMETHODS.M.
@@ -42,7 +42,7 @@ if nargout>1                               % do we want the marginal likelihood?
       dnlZ.cov(i) = sum(sum(Q.*feval(cov{:}, hyp.cov, x, [], i)))/2;
     end
     dnlZ.lik = sn2*trace(Q);
-    for i = 1:numel(hyp.mean), 
+    for i = 1:numel(hyp.mean)
       dnlZ.mean(i) = -feval(mean{:}, hyp.mean, x, i)'*alpha;
     end
   end

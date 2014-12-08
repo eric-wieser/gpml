@@ -18,6 +18,7 @@
 %               No derivatives w.r.t. to hyperparameters are provided.
 %
 %   infLOO      Leave-One-Out predictive probability and Least-Squares Approxim.
+%   infPrior    Perform inference with hyperparameter prior.
 %
 % The interface to the approximation methods is the following:
 %
@@ -49,5 +50,5 @@
 % For more information on the individual approximation methods and their
 % implementations, see the separate inf??.m files. See also gp.m
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2014-08-14.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2015-05-18.
 %                                      File automatically generated using noweb.

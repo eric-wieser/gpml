@@ -22,7 +22,7 @@ function K = covNoise(hyp, x, z, i)
 tol = eps;   % threshold on the norm when two vectors are considered to be equal
 if nargin<2, K = '1'; return; end                  % report number of parameters
 if nargin<3, z = []; end                                   % make sure, z exists
-dg = strcmp(z,'diag') && numel(z)>0;                            % determine mode
+dg = strcmp(z,'diag');                                          % determine mode
 
 n = size(x,1);
 s2 = exp(2*hyp);                                                % noise variance

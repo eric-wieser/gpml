@@ -22,9 +22,12 @@
 %   covSEard      - squared exponential covariance function with ARD
 %   covSEiso      - isotropic squared exponential covariance function
 %   covSEisoU     - same as above but without latent scale
+%   covSEvlen     - spatially varying lengthscale squared exponential
+%   covSEfact     - factor analysis squared exponential covariance function
 %   covSM         - spectral mixture covariance function
 %   covGaborard   - Gabor covariance function with ARD
 %   covGaborsio   - isotropic Gabor covariance function
+%   covDiscrete   - precomputed covariance for discrete data
 %
 % composite (meta) covariance functions (see explanation at the bottom):
 %   covScale      - scaled version of a covariance function
@@ -34,11 +37,14 @@
 %   covMask       - mask some dimensions of the data
 %   covPERard     - make ARD stationary covariance periodic
 %   covPERiso     - make isotropic stationary covariance periodic
+%   covPref       - difference covariance for preference learning
 %
 % special purpose (wrapper) covariance functions
-%   covFITC       - to be used in conjunction with infFITC for large scale 
-%                   regression problems; any covariance can be wrapped by
+%   covFITC       - to be used in conjunction with infFITC* for large scale 
+%                   inference problems; any covariance can be wrapped by
 %                   covFITC such that the FITC approximation is applicable
+%   covGrid       - to be used in conjunction with infGrid* for large scale 
+%                   inference problems on grids resulting Kronecker structure
 %
 % Naming convention: all covariance functions are named "cov/cov*.m". A trailing
 % "iso" means isotropic, "ard" means Automatic Relevance Determination, and
@@ -117,5 +123,5 @@
 %
 % See also doc/usageCov.m.
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2014-08-14.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2015-05-18.
 %                                      File automatically generated using noweb.

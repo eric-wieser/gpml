@@ -34,7 +34,7 @@ lam = exp(hyp);
 
 if nargin<6                              % prediction mode if inf is not present
   if numel(y)==0,  y = zeros(size(mu)); end
-  s2zero = 1; if nargin>4, if norm(s2)>0, s2zero = 0; end, end         % s2==0 ?
+  s2zero = 1; if nargin>3&&numel(s2)>0&&norm(s2)>eps, s2zero = 0; end  % s2==0 ?
   if s2zero                                                    % log probability
     lg = g(mu,link); elg = exp(lg);
     lZy = -(log(lam)-log(2*pi*y.^3))/2;                 % normalisation constant

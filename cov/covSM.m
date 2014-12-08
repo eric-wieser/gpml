@@ -1,20 +1,22 @@
 function K = covSM(Q, hyp, x, z, i)
 
-% Gaussian Spectral Mixture covariance function. The covariance function is 
-% -- depending on the sign of Q -- parameterized as:
+% Gaussian Spectral Mixture covariance function. The covariance function 
+% parametrization depends on the sign of Q.
 %
-% SM, spectral mixture:  Q>0  => P = 1
-%   k(x,z) = w'*prod(h(dxz,v,m),2), h(t,v,m) = exp(-2*pi^2*t^2*v)*cos(2*pi*t*m)
-%   where dxz = ||x-z|| is the Euclidean distance between x and z,
+% Let t(Dx1) be an offset vector in dataspace e.g. t = x_i - z_j. Then w(DxP)
+% are the weights and m(Dx|Q|) = 1/p, v(Dx|Q|) = (2*pi*ell)^-2 are spectral
+% means (frequencies) and variances, where p is the period and ell the length
+% scale of the Gabor function h(t2v,tm) given by the expression
+%   h(t2v,tm) = exp(-2*pi^2*t2v).*cos(2*pi*tm)
+%
+% Then, the two covariances are obtained as follows:
+%
+% SM, spectral mixture:  Q>0 => P = 1
+%   k(x_i,z_j) = w'*h(v'*(t.*t),m'*t)
 %
 % SMP, spectral mixture product: Q<0 => P = D
-%   k(x,z) = prod( sum(w.*h(dxz,v,m),2) )
-%   where dxz = diag(x-z) is the matrix with the difference x-z on its
-%   diagonal;
+%   k(x_i,z_j) = prod(w'*h(T*T*v,T*m)), T = diag(t)
 %
-% further, h(t,v,m) is a Gaboriso covariance function, w(DxP) are the weights
-% and m(DxQ) = 1/p, v(DxQ) = (2*pi*ell)^-2 are spectral means (frequencies) and 
-% variances, where p is the period and ell the length scale of the Gabor function. 
 % The hyperparameters are:
 %
 % hyp = [ log(w(:))
@@ -44,22 +46,22 @@ function K = covSM(Q, hyp, x, z, i)
 % For Q>0, covSM corresponds to Eq. 12 in Ref (1)
 % For Q<0, covSM corresponds to Eq. 14 in Ref (2) (but w here = w^2 in (14))
 %
-% Copyright (c) by Andrew Gordon Wilson and Hannes Nickisch, 2013-10-21.
+% Copyright (c) by Andrew Gordon Wilson and Hannes Nickisch, 2014-09-24.
 %
 % See also COVFUNCTIONS.M, COVGABORISO.M, COVGABORARD.M.
 
-smp = Q<0; Q = abs(Q);                         % switch between covSM and covSMP
+smp = Q<0; Q = abs(Q);                    % switch between covSM and covSMP mode
 if nargin<3                                            % report no of parameters
   if smp, K = '3*D*'; else K = '(1+2*D)*'; end, K = [K,sprintf('%d',Q)]; return
 end
 if nargin<4, z = []; end                                   % make sure, z exists
 
-D = size(x,2); P = smp*D+(1-smp);                               % dimensionality
+D = size(x,2); P = smp*D+(1-smp);                   % dimensionality, P=D or P=1
 lw = reshape(hyp(         1:P*Q) ,P,Q);                    % log mixture weights
 lm = reshape(hyp(P*Q+    (1:D*Q)),D,Q);                     % log spectral means
 ls = reshape(hyp(P*Q+D*Q+(1:D*Q)),D,Q);       % log spectral standard deviations
 
-% In the following we construct nested cell arrays to finally obtain either
+% In the following, we construct nested cell arrays to finally obtain either
 if smp % 1) the product of weighted sums of 1d covGabor covariance functions or
   fac = cell(1,D);
   for d=1:D
@@ -68,17 +70,15 @@ if smp % 1) the product of weighted sums of 1d covGabor covariance functions or
     fac{d} = {'covSum',add};                       % b) combine addends into sum
   end
   cov = {'covProd',fac};                       % c) combine factors into product
-else   % 2) the weighted sum of products of 1d covGabor covariance functions.
-                          % a) factors for product of univariate Gabor functions
-  fac = cell(1,D); for d=1:D, fac{d} = {'covMask',{d,{'covGaboriso'}}}; end
-                   % b) addends for weighted sum of multivariate Gabor functions
-  add = cell(1,Q); for q=1:Q, add{q} = {'covScale',{'covProd',fac}};  end
-  cov = {'covSum',add};                            % c) combine addends into sum
+else   % 2) the weighted sum of multivariate covGaborard covariance functions.
+                                  % weighted sum of multivariate Gabor functions
+  add = cell(1,Q); for q=1:Q, add{q} = {'covScale',{'covGaborard'}};  end
+  cov = {'covSum',add};                                       % combine into sum
 end
-if smp   % assemble hyp; covGaboriso is parametrised using -ls-log(2*pi) and -lm
-  hyp = [lw(:)'/2;          -ls(:)'-log(2*pi); -lm(:)'        ];
+if smp      % assemble hyp; covGabor is parametrised using -ls-log(2*pi) and -lm
+  hyp = [lw(:)'/2; -ls(:)'-log(2*pi); -lm(:)'];
 else
-  hyp = [lw(:)'/2; reshape([-ls(:)'-log(2*pi); -lm(:)'],2*D,Q)];
+  hyp = [lw/2;     -ls-log(2*pi);     -lm    ];
 end
 
 if nargin<5                                       % evaluation of the covariance
@@ -90,12 +90,12 @@ else
   if i<=P*Q                                               % derivatives w.r.t. w
     c =  0.5;
     if smp, j = 1+3*(i-1); else j = 1+(i-1)*(2*D+1); end
-  elseif i<=(P+D)*Q                                       % derivatives w.r.t. m
-    c = -1.0; j = i-P*Q;
-    if smp, j = 3+3*(j-1); else j = 2*j+floor((j-1)/D)+1; end
+  elseif i<=(P+  D)*Q                                     % derivatives w.r.t. m
+    c = -1.0; j = i- P   *Q; [j1,j2] = ind2sub([D,Q],j);
+    if smp, j = 3+3*(j-1); else j = 1+j1+D+(j2-1)*(2*D+1); end
   elseif i<=(P+2*D)*Q                                     % derivatives w.r.t. v
-    c = -1.0; j = i-(P+D)*Q;
-    if smp, j = 2+3*(j-1); else j = 2*j+floor((j-1)/D); end
+    c = -1.0; j = i-(P+D)*Q; [j1,j2] = ind2sub([D,Q],j);
+    if smp, j = 2+3*(j-1); else j = 1+j1+  (j2-1)*(2*D+1); end
   else
     error('Unknown hyperparameter')
   end

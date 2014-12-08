@@ -7,9 +7,9 @@ function [post nlZ dnlZ] = infKL(hyp, mean, cov, lik, x, y)
 % locally be iterating over the sites. For log-concave likelihoods, the
 % latter minimisation constitutes a 2d joint convex problem, so convergence
 % is guaranteed.
-% The function takes a specified covariance function (see covFunction.m) and
-% likelihood function (see likFunction.m), and is designed to be used with
-% gp.m. See also infFunctions.m.
+% The function takes a specified covariance function (see covFunctions.m) and
+% likelihood function (see likFunctions.m), and is designed to be used with
+% gp.m. See also infMethods.m.
 %
 % Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch 2013-09-13.
 %
@@ -160,44 +160,16 @@ function y = logdet(A)
   y = sum(log(abs(u)));
 
 % Gaussian smoothed likelihood function; instead of p(y|f)=lik(..,f,..) compute
-%   log likKL(f) = int log lik(..,t,..) N(f|t,v), where
-%     v   .. marginal variance = (positive) smoothing width, and
-%     lik .. lik function such that feval(lik{:},varargin{:}) yields a result.
-% All return values are separately integrated using Gaussian-Hermite quadrature.
-% Gaussian smoothed likelihood function; instead of p(y|f)=lik(..,f,..) compute
-%   likKL(f) = int lik(..,t,..) N(f|t,v), where
+%   log likKL(f) = int log lik(..,t,..) N(f|t,v) dt, where
 %     v   .. marginal variance = (positive) smoothing width, and
 %     lik .. lik function such that feval(lik{:},varargin{:}) yields a result.
 % All return values are separately integrated using Gaussian-Hermite quadrature.
 function [ll,df,d2f,dv,d2v,dfdv] = likKL(v, lik, varargin)
-  N = 20;                                          % number of quadrature points
-  [t,w] = gauher(N);      % location and weights for Gaussian-Hermite quadrature
   f = varargin{3};                               % obtain location of evaluation
   sv = sqrt(v);                                                % smoothing width
-  ll = 0; df = 0; d2f = 0; dv = 0; d2v = 0; dfdv = 0;    % init return arguments
-  for i=1:N                                            % use Gaussian quadrature
-    varargin{3} = f + sv*t(i);   % coordinate transform of the quadrature points
-    [lp,dlp,d2lp] = feval(lik{:},varargin{1:3},[],'infLaplace',varargin{6:end});
-    if nargout>0,     ll  = ll  + w(i)*lp;               % value of the integral
-      if nargout>1,   df  = df  + w(i)*dlp;             % derivative w.r.t. mean
-        if nargout>2, d2f = d2f + w(i)*d2lp;        % 2nd derivative w.r.t. mean
-          if nargout>3                              % derivative w.r.t. variance
-            ai = t(i)./(2*sv+eps); dvi = dlp.*ai; dv = dv + w(i)*dvi; % no 0 div
-            if nargout>4                        % 2nd derivative w.r.t. variance
-              d2v = d2v + w(i)*(d2lp.*(t(i)^2/2)-dvi)./(v+eps)/2;     % no 0 div
-              if nargout>5                            % mixed second derivatives
-                dfdv = dfdv + w(i)*(ai.*d2lp);
-              end
-            end
-          end
-        end
-      end
-    end
-  end
-  % likLaplace can be done analytically
   lik_str = lik{1}; if ~ischar(lik_str), lik_str = func2str(lik_str); end
-  if strcmp(lik_str,'likLaplace')
-    b = exp(varargin{1})/sqrt(2); y = varargin{2}; sv = sqrt(v);
+  if strcmp(lik_str,'likLaplace')          % likLaplace can be done analytically
+    b = exp(varargin{1})/sqrt(2); y = varargin{2};
     mu = (f-y)/b; z = (f-y)./sv;
     Nz = exp(-z.^2/2)/sqrt(2*pi);
     Cz = (1+erf(z/sqrt(2)))/2;
@@ -207,4 +179,18 @@ function [ll,df,d2f,dv,d2v,dfdv] = likKL(v, lik, varargin)
     dv = d2f/2;
     d2v = (z.*z-1)./(v+eps).*d2f/4;
     dfdv = -z.*d2f./(2*sv+eps);
+  else
+    N = 20;                                        % number of quadrature points
+    [t,w] = gauher(N);    % location and weights for Gaussian-Hermite quadrature
+    ll = 0; df = 0; d2f = 0; dv = 0; d2v = 0; dfdv = 0;  % init return arguments
+    for i=1:N                                          % use Gaussian quadrature
+      varargin{3} = f + sv*t(i); % coordinate transform of the quadrature points
+      [lp,dlp,d2lp]=feval(lik{:},varargin{1:3},[],'infLaplace',varargin{6:end});
+      ll   = ll  + w(i)*lp;                              % value of the integral
+      df   = df  + w(i)*dlp;                              % derivative wrt. mean
+      d2f  = d2f + w(i)*d2lp;                         % 2nd derivative wrt. mean
+      ai = t(i)./(2*sv+eps); dvi = dlp.*ai; dv = dv+w(i)*dvi;   % deriv wrt. var
+      d2v  = d2v + w(i)*(d2lp.*(t(i)^2/2)-dvi)./(v+eps)/2;  % 2nd deriv wrt. var
+      dfdv = dfdv + w(i)*(ai.*d2lp);                  % mixed second derivatives
+    end
   end

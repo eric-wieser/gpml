@@ -1,9 +1,9 @@
 function [post nlZ dnlZ] = infEP(hyp, mean, cov, lik, x, y)
 
 % Expectation Propagation approximation to the posterior Gaussian Process.
-% The function takes a specified covariance function (see covFunction.m) and
-% likelihood function (see likFunction.m), and is designed to be used with
-% gp.m. See also infFunctions.m. In the EP algorithm, the sites are 
+% The function takes a specified covariance function (see covFunctions.m) and
+% likelihood function (see likFunctions.m), and is designed to be used with
+% gp.m. See also infMethods.m. In the EP algorithm, the sites are 
 % updated in random order, for better performance when cases are ordered
 % according to the targets.
 %
@@ -16,8 +16,10 @@ tol = 1e-4; max_sweep = 10; min_sweep = 2;     % tolerance to stop EP iterations
 
 inf = 'infEP';
 n = size(x,1);
-K = feval(cov{:}, hyp.cov, x);                  % evaluate the covariance matrix
-m = feval(mean{:}, hyp.mean, x);                      % evaluate the mean vector
+if isnumeric(cov),  K = cov;                    % use provided covariance matrix
+else K = feval(cov{:},  hyp.cov,  x); end       % evaluate the covariance matrix
+if isnumeric(mean), m = mean;                         % use provided mean vector
+else m = feval(mean{:}, hyp.mean, x); end             % evaluate the mean vector
 
 % A note on naming: variables are given short but descriptive names in 
 % accordance with Rasmussen & Williams "GPs for Machine Learning" (2006): mu

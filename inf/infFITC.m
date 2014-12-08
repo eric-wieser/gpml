@@ -13,8 +13,8 @@ function [post nlZ dnlZ] = infFITC(hyp, mean, cov, lik, x, y)
 % is O(n nu^2) where n is the number of data points x and nu the number of
 % inducing inputs in xu.
 %
-% The function takes a specified covariance function (see covFunction.m) and
-% likelihood function (see likFunction.m), and is designed to be used with
+% The function takes a specified covariance function (see covFunctions.m) and
+% likelihood function (see likFunctions.m), and is designed to be used with
 % gp.m and in conjunction with covFITC and likGauss.
 %
 % The inducing points can be specified through 1) the 2nd covFITC parameter or
@@ -91,7 +91,7 @@ if nargout>1                                % do we want the marginal likelihood
       else
         e = 2*exp(-2*hyp.cov(1:D));
       end
-      v = diag_dK-1./g_sn2;        % BdK = B * ( dnlZ/dK - diag(diag(dnlZ/dK)) )
+      v = diag_dK-1./g_sn2;        % BdK = B * ( diag(diag(dnlZ/dK)) - dnlZ/dK )
       BdK = B.*repmat(v',nu,1) + BWt*W + (B*al)*al';
       A = Kpu.*BdK; C = Kpuu.*(BdK*B'); C = diag(sum(C,2)-sum(A,2)) - C;
       dnlZ.xu = A*x*diag(e) + C*xu*diag(e);  % bring in data and inducing points

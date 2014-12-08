@@ -17,9 +17,9 @@ function [post nlZ dnlZ] = infFITC_Laplace(hyp, mean, cov, lik, x, y)
 % The posterior N(f|h,Sigma) is given by h = m+mu with mu = nn + P'*gg and
 % Sigma = inv(inv(K)+diag(W)) = diag(d) + P'*R0'*R'*R*R0*P.
 %             
-% The function takes a specified covariance function (see covFunction.m) and
-% likelihood function (see likFunction.m), and is designed to be used with
-% gp.m and in conjunction with covFITC. 
+% The function takes a specified covariance function (see covFunctions.m) and
+% likelihood function (see likFunctions.m), and is designed to be used with
+% gp.m and in conjunction with covFITC.
 %
 % The inducing points can be specified through 1) the 2nd covFITC parameter or
 % by 2) providing a hyp.xu hyperparameters. Note that 2) has priority over 1).
@@ -28,7 +28,7 @@ function [post nlZ dnlZ] = infFITC_Laplace(hyp, mean, cov, lik, x, y)
 % the derivatives dnlZ.xu can only be computed for one of the following eight
 % covariance functions: cov{Matern|PP|RQ|SE}{iso|ard}.
 %
-% Copyright (c) by Hannes Nickisch, 2013-10-28.
+% Copyright (c) by Hannes Nickisch, 2015-02-09.
 %
 % See also INFMETHODS.M, COVFITC.M.
 
@@ -136,10 +136,10 @@ if nargout>2                                           % do we want derivatives?
       % since snu2 is a fixed fraction of sn2, there is a covariance-like term
       % in the derivative as well
       snu = sqrt(snu2);
-      T = chol_inv(Kuu + snu2*eye(nu)); T = T'*(T*(snu*Ku)); t = sum(T.*T,1)';
-      z = alpha'*(T'*(T*alpha)-t.*alpha) - sum(RVdd.*RVdd,1)*t;
+      T = chol_inv(Kuu + snu2*eye(nu)); T = T'*(T*(snu*Ku)); st2 = sum(T.*T,1)';
+      z = alpha'*(T'*(T*alpha)-st2.*alpha) - sum(RVdd.*RVdd,1)*st2;
       z = z + sum(sum( (RVdd*T').^2 ));
-      b = (t.*dlp-T'*(T*dlp))/2;
+      b = (st2.*dlp-T'*(T*dlp))*2;
       KZb = mvmK(mvmZ(b,RVdd,t),V,d0);
       z = z - dfhat'*( b-KZb );
       dnlZ.lik(i) = dnlZ.lik(i) + z;

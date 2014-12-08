@@ -25,11 +25,11 @@ OCT            = mkoctfile
 
 ### 3) Choose L-BFGS-B configuration ##########################################
 ### Uncomment the following 2 lines for LBFGSB 2.4. ---------------------------
-#LBFGSB_OBJS = solver_2_4.o
-#LIBS =
-### Uncomment the following 2 lines for LFBGSB 3.0 with blas libs provided. ---
-LBFGSB_OBJS = solver_3_0.o linpack.o timer.o blas.o
+LBFGSB_OBJS = solver_2_4.o
 LIBS =
+### Uncomment the following 2 lines for LFBGSB 3.0 with blas libs provided. ---
+#LBFGSB_OBJS = solver_3_0.o linpack.o timer.o blas.o
+#LIBS =
 ### Uncomment the following 2 lines for LFBGSB 3.0 own blas libs. -------------
 #LBFGSB_OBJS = solver_3_0.o linpack.o timer.o
 #LIBS = -lblas

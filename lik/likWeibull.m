@@ -33,7 +33,7 @@ lg1 = gammaln(1+1/ka); g1 = exp(lg1); dlg1 = -psi(1+1/ka)/ka;
 
 if nargin<6                              % prediction mode if inf is not present
   if numel(y)==0,  y = zeros(size(mu)); end
-  s2zero = 1; if nargin>4, if norm(s2)>0, s2zero = 0; end, end         % s2==0 ?
+  s2zero = 1; if nargin>4&&numel(s2)>0&&norm(s2)>eps, s2zero = 0; end  % s2==0 ?
   if s2zero                                                    % log probability
     lg = g(mu,link);
     lp = lg1 + log(ka) + (ka-1)*(lg1+log(y)) - ka*lg - exp(ka*(lg1+log(y)-lg));

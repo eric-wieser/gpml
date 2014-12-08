@@ -20,7 +20,7 @@ if numel(y)==0, y = 1; end
 
 if nargin<5                              % prediction mode if inf is not present
   y = y.*ones(size(mu));                                       % make y a vector
-  s2zero = 1; if nargin>3, if norm(s2)>0, s2zero = 0; end, end         % s2==0 ?
+  s2zero = 1; if nargin>3&&numel(s2)>0&&norm(s2)>eps, s2zero = 0; end  % s2==0 ?
   if s2zero                                         % log probability evaluation
     yf = y.*mu;      % product latents and labels
     lp = yf; ok = -35<yf; lp(ok) = -log(1+exp(-yf(ok)));     % log of likelihood
