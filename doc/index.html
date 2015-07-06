@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<h1>Documentation for GPML Matlab Code version 3.5</h1>
+<h1>Documentation for GPML Matlab Code version 3.6</h1>
 
 <h2>1) What?</h2>
 
@@ -32,9 +32,9 @@ written by Carl Edward Rasmussen and Chris Williams.</p>
 
 <p>All the code including demonstrations and html documentation can be
 downloaded in a <a
- href="http://gaussianprocess.org/gpml/code/matlab/release/gpml-matlab-v3.5-2014-12-08.tar.gz">tar</a>
+ href="http://gaussianprocess.org/gpml/code/matlab/release/gpml-matlab-v3.6-2015-07-07.tar.gz">tar</a>
 or <a
- href="http://gaussianprocess.org/gpml/code/matlab/release/gpml-matlab-v3.5-2014-12-08.zip">zip</a>
+ href="http://gaussianprocess.org/gpml/code/matlab/release/gpml-matlab-v3.6-2015-07-07.zip">zip</a>
 archive file.</p>
 
 <p>Minor changes and incremental bugfixes to the current version are
@@ -209,7 +209,7 @@ need to know about:</p>
   <tr bgcolor="#CCCCCC"> 
     <td align="center">Grid<br> <a href="../inf/infGrid.m">infGrid</a></td>
     <td align="center">&nbsp;</td>
-    <td align="center">&nbsp;</td>
+    <td align="center">Grid-Laplace<br> <a href="../inf/infGrid_Laplace.m">infGrid_Laplace</a></td>
   </tr>
   <tr> 
     <td align="left">Gaussian</td>
@@ -413,7 +413,7 @@ need to know about:</p>
   <tr bgcolor="#CCCCCC"> 
     <td align="center">Grid<br> <a href="../inf/infGrid.m">infGrid</a></td>
     <td align="center">&nbsp;</td>
-    <td align="center">&nbsp;</td>
+    <td align="center">Grid-Laplace<br> <a href="../inf/infGrid_Laplace.m">infGrid_Laplace</a></td>
   </tr>
   <tr> 
     <td align="left">Mixture</td>
@@ -468,7 +468,7 @@ need to know about:</p>
   <tr bgcolor="#CCCCCC"> 
     <td align="center">Grid<br> <a href="../inf/infGrid.m">infGrid</a></td>
     <td align="center">&nbsp;</td>
-    <td align="center">&nbsp;</td>
+    <td align="center">Grid-Laplace<br> <a href="../inf/infGrid_Laplace.m">infGrid_Laplace</a></td>
   </tr>
   <tr> 
     <td align="left">Uniform</td>
@@ -586,7 +586,7 @@ need to know about:</p>
   <tr bgcolor="#CCCCCC"> 
     <td align="center">Grid<br> <a href="../inf/infGrid.m">infGrid</a></td>
     <td align="center">&nbsp;</td>
-    <td align="center">&nbsp;</td>
+    <td align="center">Grid-Laplace<br> <a href="../inf/infGrid_Laplace.m">infGrid_Laplace</a></td>
   </tr>
   <tr> 
     <td align="left">Weibull</td>
@@ -1256,6 +1256,13 @@ points can be used as inducing points.
 
 <center><img src="f8.gif" alt="f8.gif"></center><br>
 
+<h4>Large scale classification exploiting the grid structure</h4>
+
+<p> Similar to regression using <tt>inGrid</tt>, we can perform approximate inference
+using <tt>inGrid_Laplace</tt> to scale GPs beyond the O(n³) limit.
+Please visit the <a href="http://www.cs.cmu.edu/~andrewgw/pattern/index.html#Poisson"> website by Seth Flaxman</a> for an extended example and related datasets.
+</p>
+
 <h4>Exercise for the reader</h4>
 <dl>
 <dt><strong>Inference Methods</strong>
@@ -1274,9 +1281,9 @@ is best?
 
 <p>Innumerable colleagues have helped to improve this software. Some
 of these are: John Cunningham, M&aacute;t&eacute; Lengyel, Joris Mooij, 
-Iain Murray, David Duvenaud, Andrew McHutchon, Rowan McAllister, Daniel Marthaler, Giampiero Salvi, Mark van der Wilk, Marco Fraccaro, Dali Wei, Ernst Kloppenburg, Ryan Turner and Chris Williams. Especially Ed Snelson helped to improve the code and to include sparse approximations and Roman Garnett and Jos&eacute; Vallet helped to include hyperparameter priors. The spectral mixture covariance function and the grid-based inference were contributed by Andrew Gordon Wilson and periodic covariances were added by James Robert Lloyd.</p>
+Iain Murray, David Duvenaud, Andrew McHutchon, Rowan McAllister, Daniel Marthaler, Giampiero Salvi, Mark van der Wilk, Marco Fraccaro, Dali Wei, Ernst Kloppenburg, Ryan Turner, Seth Flaxman and Chris Williams. Especially Ed Snelson helped to improve the code and to include sparse approximations and Roman Garnett and Jos&eacute; Vallet helped to include hyperparameter priors. The spectral mixture covariance function and the grid-based inference were contributed by Andrew Gordon Wilson and periodic covariances were added by James Robert Lloyd.</p>
 
 <hr>
-Last modified: March 23rd 2015
+Last modified: July 7th 2015
 </body>
 </html>

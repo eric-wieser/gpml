@@ -54,7 +54,7 @@ end
 if nargin<6                              % prediction mode if inf is not present
   if numel(y)==0,  y = zeros(size(mu)); end
   s2zero = 1; if nargin>4, s2 = varargin{1}; end                       % s2==0 ?
-  if nargin>4&&numel(s2)>0&&norm(s2)>eps>0, s2zero = 0; end, end
+  if nargin>4&&numel(s2)>0&&norm(s2)>eps>0, s2zero = 0; end
   if s2zero                                                    % log probability
     lp = likGaussWarp(warp, hyp, y, mu, [], 'infLaplace'); s2 = 0*mu;
   else

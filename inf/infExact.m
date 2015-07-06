@@ -4,7 +4,7 @@ function [post nlZ dnlZ] = infExact(hyp, mean, cov, lik, x, y)
 % of the posterior, the negative log marginal likelihood and its derivatives
 % w.r.t. the hyperparameters. See also "help infMethods".
 %
-% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2015-05-18.
+% Copyright (c) by Carl Edward Rasmussen and Hannes Nickisch, 2015-07-13.
 %                                      File automatically generated using noweb.
 %
 % See also INFMETHODS.M.
