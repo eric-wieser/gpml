@@ -1,0 +1,10 @@
+# ignore OSX files
+._*
+.DS_Store
+
+# backup files
+*.asv
+*.m~
+
+# Compiled MEX binaries (all platforms)
+*.mex*
